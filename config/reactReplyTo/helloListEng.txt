@@ -3,4 +3,4 @@
   (go+d\s)?(morning|evening|afternoon)
   ho+wdy+
   h+i+
-  o+ha+[yj]o+u?
+  yo+

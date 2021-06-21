@@ -6,6 +6,11 @@ const reactReplyTo = {};
 const reactHow = {};
 const replyHow = {};
 
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
 //"Read files"
 const reactReplyToFile = fs.readdirSync('config/reactReplyTo/');
 reactReplyToFile.forEach(file => {
@@ -28,25 +33,48 @@ fileReactHowFile.forEach(file => {
 });
 
 
+const fileReplyHowFile = fs.readdirSync('config/replyHow/');
+fileReplyHowFile.forEach(file => {
+  const extention = path.extname(file); 
+  const fileName = path.basename(file, extention);
+  replyHow[fileName] = JSON.parse(fs.readFileSync(path.join('config/replyHow/', file), 'utf8'))
+  // console.log(reactHow);
+});
+
+
 //Class Declarations
 class InteractWith {
 
+  checkIfMatch(msg, msgMatch) {
+    if (msgMatch === "author") {
+      return msg.author.username;
+    }
+    else if (msgMatch === "query") {
+      return msg.content;
+    }
+  }
+
 //reply by writing a message
-  reply(msg, reactToArray, replyHowArray) {
-    const matchingRegexArray = reactToArray.find(r => ` ${msg.content} `.match(r));
+  async reply(msg, replyToArray, replyHowArray, msgMatch) {
+    const matchingRegexArray = replyToArray.find(r => ` ${msg.content} `.match(r));
     if(matchingRegexArray) {
       const match = ` ${msg.content} `.match(matchingRegexArray);
       if (match) {
-        const randomReply = replyHowArray[Math.floor(Math.random()*replyHowArray.length)];
+        const matchResult = this.checkIfMatch(msg, msgMatch);
+        let randomReply = replyHowArray[Math.floor(Math.random()*replyHowArray.length)];
+        // console.log(randomReply, replyHowArray);
+        for (let item of randomReply) {
+          if (matchResult) {
+            item = item.replace('$match$',matchResult);
+          }
           msg.channel.startTyping();
-          setTimeout(() => {
-            msg.channel.send(randomReply);
-            msg.channel.stopTyping();
-          }, 1600);
+          await sleep(1600);
+          msg.channel.send(item);
+          msg.channel.stopTyping();
+        }
       }
     }
   }
-  // msg.channel.send(match[1] + ", a teraz wypierdalaj");
 
 //react by using an emoticon, picks random reaction from reactions array, reacts with it.
   react(msg, reactToArray, reactHowArray) {
@@ -72,7 +100,7 @@ client.on('ready', () => {
 
 client.on('raw', ({ op, t, d }) => {
   if(op !== 0) return;
-  // console.log(`\n>>>>>>PACKET ${t} >>>>>>> \n`, d, `\n<<<<<<<<<<<<\n`);
+  console.log(`\n>>>>>>PACKET ${t} >>>>>>> \n`, d, `\n<<<<<<<<<<<<\n`);
 });
 
 
@@ -84,12 +112,17 @@ client.on('message', msg => {
     return;
   }
 
-  // Declare how you want to reply and react and to what
+
+// Declare how you want to reply and react and to what
+const sexQueryDeclared = [...reactReplyTo.sexListPl, ...reactReplyTo.sexListPl, ...reactReplyTo.sexListUniversal];
+const sexReplyDeclared = [...reactHow.sexReactionUniversal];
+const helloQueryDeclared = [...reactReplyTo.helloListPl, ...reactReplyTo.helloListUniversal];
+const helloReplyDeclared = [...replyHow.helloRepliesPl];
+
+
   const curseBot01 = new InteractWith();
-  curseBot01.react(msg, reactReplyTo.sexListPl, reactHow.sexReactionUniversal);
-  curseBot01.react(msg, reactReplyTo.sexListUniversal, reactHow.sexReactionPl);
-  console.log(reactHow.sexReactionUniversal);
-  console.log(reactReplyTo.sexListPl);
+  curseBot01.react(msg, sexQueryDeclared, sexReplyDeclared);
+  curseBot01.reply(msg, helloQueryDeclared, helloReplyDeclared, "query");
 });
 
 client.login('ODM1NTc3MTIwMjE0MDg5Nzc5.YIRd1Q.k-pDUvnJEfvjUbuQJbZSMp8PwmI');

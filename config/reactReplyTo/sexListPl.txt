@@ -4,60 +4,60 @@ sa+dy+([sz]m|[sś]cie|[sś]ami)
 sa+dy+[sz]t[yaeęą]?(czność|n[ya])?
 ma+so+c?hi+([sz]m|[sś]cie|[sś]ami)
 ma+so+c?hi+[sz]t[yaeęą]?(czność|n[ya])?
- se+(x|ks)+y?
- ru+cha+ni+[eau]
- (za|wy)?ru+cha+[cć]
- pi+e+rdo+l(eni[ea]|i[cć]?)
- g(rz|ż)mo+ci+[ćc]?
- pi+e+p[rs]zy[cć]?
- pi+e+p[rs]ze+ni+e+
- du+p[ayęąeo]+
- cy+cki+
- z?gwa+[łl]ci+([cćłl]?|[łl]em|sz|my)
- gwa+[łl]t
- z?gwa+[łl]c(on[aye]|enie)
- du+p[ayęąeo]?
- ry+pa+(nie|[cć])?
- pi+e+rni+cz(enie|[yęe])?
- pi+wni+c[ayeęąa]?
- ko+pu+lo+wa+([cćłl]|[lł]eś|[łl]aś|no+)?
- bre+do+wa+([cćłl]|[lł][iy][śs]my+)?
- i+gra+szki+
- ku+ta+s([ya]|ik)*
- [bp]e+ni+[sz]([ayu]|ie|em|ami)*
- py+to+ng[au]*
- po+pę+d(u+|e+m)?
- ka+ma+su+tr[aęeą]?
- te+\sspra+wy+
- ci+u+pci+a+(ni[eau]|[cć])
- chę+do+ż(eni[ea]|[ey])*
- pi+e+rsi+
- bi+u+st[uy]*
- bzy+ka+ni+[ea]+
- sp[óo]+[lł]ko+wa+ni+e+
- du+pcz(y+ć|e+ni+[aeu]+)?
- grzmo+[cć](ić|eni[ae])?
- po+su+wa+([cć]|ni[ea]|[łl])?
- za+p[łl]a+dni+a+[ćc]
- wa+li+[cć]
- ko+[nń](i[ae]m?)
- ga+ng\sba+ng
- ci+p[aąęey]?
- fe+l+i+a+ti?o
- cu+n+i+l+i+ngu+s+
- mi+ne+tk?a
- pro+sty+tu+cja+
- pro+sty+tu+(tk[aioeęą]|cj[aąęei]|ji+)?
- a+na+l(e[km])?
- fi+u+t(ek|em|kiem)?
- c*h[uó]j(em|ami)*
- pa+ł[aęeą]*
- k[uó]ta+fo+n
- ku+[śs]k[eaęą]
- si+u+si+a+k(iem|om|ami)*
- wa+c(ek|kiem|ami)
- pi+si+o+r(e[mk])*
- kna+g[aąęe]*
- pi+p[aąęeo]
- je+ba+[cćlł]([oa]|[ea]m)?
- pi+zd[ayęą]+
+se+(x|ks)+y?
+ru+cha+ni+[eau]
+(za|wy)?ru+cha+[cć]
+pi+e+rdo+l(eni[ea]|i[cć]?)
+g(rz|ż)mo+ci+[ćc]?
+pi+e+p[rs]zy[cć]?
+pi+e+p[rs]ze+ni+e+
+du+p[ayęąeo]+
+cy+cki+
+z?gwa+[łl]ci+([cćłl]?|[łl]em|sz|my)
+gwa+[łl]t
+z?gwa+[łl]c(on[aye]|enie)
+du+p[ayęąeo]?
+ry+pa+(nie|[cć])?
+pi+e+rni+cz(enie|[yęe])?
+ko+pu+lo+wa+([cćłl]|[lł]eś|[łl]aś|no+)?
+bre+do+wa+([cćłl]|[lł][iy][śs]my+)?
+i+gra+szki+
+ku+ta+s([ya]|ik)*
+[bp]e+ni+[sz]([ayu]|ie|em|ami)*
+py+to+ng[au]*
+po+pę+d(u+|e+m)?
+ka+ma+su+tr[aęeą]?
+te+\sspra+wy+
+ci+u+pci+a+(ni[eau]|[cć])
+chę+do+ż(eni[ea]|[ey])*
+pi+e+rsi+
+bi+u+st[uy]*
+bzy+ka+ni+[ea]+
+sp[óo]+[lł]ko+wa+ni+e+
+du+pcz(y+ć|e+ni+[aeu]+)?
+grzmo+[cć](ić|eni[ae])?
+po+su+wa+([cć]|ni[ea]|[łl])?
+za+p[łl]a+dni+a+[ćc]
+wa+li+[cć]
+ko+[nń](i[ae]m?)
+ga+ng\sba+ng
+ci+p[aąęey]?
+fe+l+i+a+ti?o
+cu+n+i+l+i+ngu+s+
+mi+ne+tk?a
+pro+sty+tu+cja+
+pro+sty+tu+(tk[aioeęą]|cj[aąęei]|ji+)?
+a+na+l(e[km])?
+fi+u+t(ek|em|kiem)?
+c*h[uó]j(em|ami)*
+pa+ł[aęeą]*
+k[uó]ta+fo+n
+ku+[śs]k[eaęą]
+si+u+si+a+k(iem|om|ami)*
+wa+c(ek|kiem|ami)
+pi+si+o+r(e[mk])*
+kna+g[aąęe]*
+pi+p[aąęeo]
+je+ba+[cćlł]([oa]|[ea]m)?
+je+ba+(n[oeąęyia]|ni[oeąęiuya])
+pi+zd[ayęą]+

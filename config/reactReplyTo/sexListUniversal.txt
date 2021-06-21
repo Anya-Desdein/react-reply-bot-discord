@@ -1,8 +1,5 @@
  b+d+s+m+
  manho+d
- b+d+s+m+
- b+d+s+m+
- b+d+s+m+
  fe+de+(ryzm|r|rem)*
  blo+a+t(ing|er|erem)*
  bo+nda+ge+
