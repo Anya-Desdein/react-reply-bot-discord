@@ -20,7 +20,7 @@ reactReplyToFile.forEach(file => {
     .replace(/\r\n/g, '\n')
     .split('\n')
     .map(x => x.trim())
-    .map( x => new RegExp(`\\s(${x})\\s`, 'i'));
+    .map(x => new RegExp(`\\s(${x})\\s`, 'i'));
   // console.log(reactReplyTo);
 });
 
@@ -45,28 +45,19 @@ fileReplyHowFile.forEach(file => {
 //Class Declarations
 class InteractWith {
 
-  checkIfMatch(msg, msgMatch) {
-    if (msgMatch === "author") {
-      return msg.author.username;
-    }
-    else if (msgMatch === "query") {
-      return msg.content;
-    }
-  }
-
 //reply by writing a message
-  async reply(msg, replyToArray, replyHowArray, msgMatch) {
+  async reply(msg, replyToArray, replyHowArray) {
     const matchingRegexArray = replyToArray.find(r => ` ${msg.content} `.match(r));
     if(matchingRegexArray) {
       const match = ` ${msg.content} `.match(matchingRegexArray);
+      console.log(match[1]);
       if (match) {
-        const matchResult = this.checkIfMatch(msg, msgMatch);
         let randomReply = replyHowArray[Math.floor(Math.random()*replyHowArray.length)];
-        // console.log(randomReply, replyHowArray);
         for (let item of randomReply) {
-          if (matchResult) {
-            item = item.replace('$match$',matchResult);
-          }
+            item = item
+              .replace('$author$', msg.author.username)
+              .replace('$match$', match[1]);
+          item = item[0].toUpperCase() + item.substr(1);
           msg.channel.startTyping();
           await sleep(1600);
           msg.channel.send(item);
@@ -100,7 +91,7 @@ client.on('ready', () => {
 
 client.on('raw', ({ op, t, d }) => {
   if(op !== 0) return;
-  console.log(`\n>>>>>>PACKET ${t} >>>>>>> \n`, d, `\n<<<<<<<<<<<<\n`);
+  // console.log(`\n>>>>>>PACKET ${t} >>>>>>> \n`, d, `\n<<<<<<<<<<<<\n`);
 });
 
 
@@ -122,7 +113,7 @@ const helloReplyDeclared = [...replyHow.helloRepliesPl];
 
   const curseBot01 = new InteractWith();
   curseBot01.react(msg, sexQueryDeclared, sexReplyDeclared);
-  curseBot01.reply(msg, helloQueryDeclared, helloReplyDeclared, "query");
+  curseBot01.reply(msg, helloQueryDeclared, helloReplyDeclared);
 });
 
 client.login('ODM1NTc3MTIwMjE0MDg5Nzc5.YIRd1Q.k-pDUvnJEfvjUbuQJbZSMp8PwmI');
