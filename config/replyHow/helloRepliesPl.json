@@ -1,8 +1,12 @@
 [
   ["$match$ $author$, a teraz wypierdalaj"],
   ["$match$ $author$, a teraz idź się ruchać 🍆"],
-  ["$match$ $author$, a teraz spierdalaj"],
+  ["$match$ $author$, a teraz spierdalaj => "],
   ["$match$ $author$, a teraz idź się ruchać 🍑"],
+  ["$match$ $author$! Czy wiedziałeś, że ludzkie pigułki antykoncepcyjne działają także na goryle?"],
+  ["$match$ $author$! Czy wiedziałeś, że świnki morskie nie pocą się?"],
+  ["$match$ $author$! Czy wiedziałeś, że rekiny i płaszczki to jedyne zwierzęta, które nie chorują na raka?"],
+  ["$match$ $author$! Czy wiedziałeś, że dźwięk przemieszcza się 15 razy szybciej przez stal niż przez powietrze?"],
   ["$match$ $author$! Czy wiedziałeś, że pingwiny karmią młode własnymi wymiocinami?"],
   ["$match$ $author$! Czy wiedziałeś, że najdłuższy kał świata miał 3,7 metra?"],
   ["$match$ $author$! Czy wiedziałeś, że małe koale żywią się kupami rodziców?"],
