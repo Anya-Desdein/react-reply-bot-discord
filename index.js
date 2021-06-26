@@ -7,6 +7,7 @@ const reactReplyTo = {};
 const reactHow = {};
 const replyHow = {};
 const roles = {};
+let fileRoleName;
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
@@ -45,21 +46,58 @@ const fileRoles = fs.readdirSync('config/roles');
 fileRoles.forEach(file => {
   const extention = path.extname(file); 
   const fileName = path.basename(file, extention);
+  fileRoleName = fileName;
   roles[fileName] = JSON.parse(fs.readFileSync(path.join('config/roles/', file), 'utf8'))
-  console.log(roles);
+  // console.log(roles);
 });
 
-function createButton(el, roleChannel, file) {
-  const newId = el[0].concat(file);
-  let elCreated = new disbut.MessageButton()
-    .setLabel(el[0])
-        .setStyle("blurple")
-    .setEmoji(el[1])
-    .setID(newId);
-  roleChannel.send('', elCreated);
-};
 
 //Class Declarations
+
+class RoleMaker {
+  constructor() {
+  this.roleArray = [];
+  }
+  createButton(el, roleChannel, file, color) {
+    const addition = "_";
+    const newId = file.concat(addition ,el[0]).toLowerCase();
+    // console.log(file);
+    // console.log(el[0]);
+    // console.log(el[1]);
+    // console.log(newId);
+    let elCreated = new disbut.MessageButton()
+      .setLabel(el[0])
+      .setStyle(color)
+      .setEmoji(el[1])
+      .setID(newId);
+
+    this.roleArray.push(elCreated);
+    console.log(elCreated);
+  }
+
+  sendRoleArrayToChannel(roleChannel) {
+    let i = 0;
+    let j = 0;
+    let roleRows = [];
+    const arrayOfRows = [];
+    this.roleArray.forEach(el => {
+      if(i === 5){
+        j++;
+        i = 0;
+      } 
+      if(i === 0) {
+        roleRows[j] = new disbut.MessageActionRow();
+      }
+      roleRows[j].addComponent(el);
+      i++;
+    })
+    console.log(roleRows);
+    while (roleRows.length){
+      roleChannel.send("⠀",{components: roleRows.splice(0, 5)});
+    }
+  }
+}
+
 class InteractWith {
 
 //reply by writing a message
@@ -67,7 +105,7 @@ class InteractWith {
     const matchingRegexArray = replyToArray.find(r => ` ${msg.content} `.match(r));
     if(matchingRegexArray) {
       const match = ` ${msg.content} `.match(matchingRegexArray);
-      console.log(match[1]);
+      // console.log(match[1]);
       if (match) {
         let randomReply = replyHowArray[Math.floor(Math.random()*replyHowArray.length)];
         for (let item of randomReply) {
@@ -88,12 +126,12 @@ class InteractWith {
     const matchingRegexArray = replyToArray.find(r => ` ${msg.content} `.match(r));
     if(matchingRegexArray) {
       const match = ` ${msg.content} `.match(matchingRegexArray);
-      console.log(match[1]);
+      // console.log(match[1]);
       if (match) {
         let randomReply = replyHowArray[Math.floor(Math.random()*replyHowArray.length)];
         for (let item of randomReply) {
           const personTag = msg.content.replace(match[1], '');
-          console.log(match[1][0]);
+          // console.log(match[1][0]);
           if (match[1][0] === "!" && msg.content.indexOf(match[1]) === 0 && personTag) {
             item = item
               .replace('$person$', personTag)
@@ -168,17 +206,9 @@ const loveReplyDeclared = [...replyHow.loveRepliesPl];
 client.on('ready', async () => {
   const myGuild1 = await client.guilds.fetch('835568453649170472');
   const roleChannel = myGuild1.channels.cache.find(ch => ch.id === '858001836410011658');
-  if(roleChannel) {
-    roles.colorRolesPl.forEach(el => createButton(el, roleChannel)); 
-    client.on('clickButton', async (myButton) => {
-        // const clickedMember = myButton.clicker.member;
-        // const role = myGuild1.roles.cache.find(r => r.id === "858054630160334848");
-        // clickedMember.roles.add(role);
-        // console.log(myButton.id);
-        // await myButton.reply.send(`Your new fighter is: ${myButton.id}`);
-    });
-
-  };
+  const roleManager = new RoleMaker();
+  roles.colorRolesPl.forEach(el => roleManager.createButton(el, roleChannel, fileRoleName, "grey")); 
+  roleManager.sendRoleArrayToChannel(roleChannel);
 });
 
 

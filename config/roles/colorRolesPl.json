@@ -1,4 +1,23 @@
 [   
-  ["Jasnoróżowy", "female_sign"],
-  ["Różowy", "male_sign"]
+  ["Jasnoróżowy", "💒"],
+  ["Różowy", "♀️"],
+  ["Purpurowy", "🌌"],
+  ["Fioletowy", "🍆"],
+  ["Niebieski", "💙"],
+  ["Granatowy", "🧿"],
+  ["Jasnoniebieski", "👮‍♀️"],
+  ["Morski", "🌊"],
+  ["Miętowy", "🧟‍♀️"],
+  ["Zielony", "🦕"],
+  ["Rzygowy", "🤢"],
+  ["Żółty", "🍋"],
+  ["Serowy", "🌕"],
+  ["Pomarańczowy", "🍊"],
+  ["Brązowy", "🤎"],
+  ["Mięsny", "🍗"],
+  ["Czerwony", "⭐"],
+  ["Ciemnoczerwony", "🏮"],
+  ["Czarny", "🖤"],
+  ["Szary", "🔬"],
+  ["Jasnoszary", "🍴"]
 ]
