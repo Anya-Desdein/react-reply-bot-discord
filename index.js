@@ -1,11 +1,12 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+const disbut = require('discord-buttons');
 
 const reactReplyTo = {};
 const reactHow = {};
 const replyHow = {};
-
+const roles = {};
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
@@ -32,7 +33,6 @@ fileReactHowFile.forEach(file => {
   // console.log(reactHow);
 });
 
-
 const fileReplyHowFile = fs.readdirSync('config/replyHow/');
 fileReplyHowFile.forEach(file => {
   const extention = path.extname(file); 
@@ -41,6 +41,23 @@ fileReplyHowFile.forEach(file => {
   // console.log(reactHow);
 });
 
+const fileRoles = fs.readdirSync('config/roles');
+fileRoles.forEach(file => {
+  const extention = path.extname(file); 
+  const fileName = path.basename(file, extention);
+  roles[fileName] = JSON.parse(fs.readFileSync(path.join('config/roles/', file), 'utf8'))
+  console.log(roles);
+});
+
+function createButton(el, roleChannel, file) {
+  const newId = el[0].concat(file);
+  let elCreated = new disbut.MessageButton()
+    .setLabel(el[0])
+        .setStyle("blurple")
+    .setEmoji(el[1])
+    .setID(newId);
+  roleChannel.send('', elCreated);
+};
 
 //Class Declarations
 class InteractWith {
@@ -109,6 +126,7 @@ class InteractWith {
 
 //Real code
 const client = new Discord.Client();
+disbut(client);
 
 client.on('ready', () => {
   // console.log(`Logged in as ${client.user.tag}!`);
@@ -129,7 +147,6 @@ client.on('message', msg => {
     return;
   }
 
-
 // Declare how you want to reply and react and to what
 const sexQueryDeclared = [...reactReplyTo.sexListPl, ...reactReplyTo.sexListPl, ...reactReplyTo.sexListUniversal];
 const sexReplyDeclared = [...reactHow.sexReactionUniversal];
@@ -147,5 +164,23 @@ const loveReplyDeclared = [...replyHow.loveRepliesPl];
   curseBot01.replyTag(msg, yourMomQueryDeclared, yourMomReplyDeclared);
   curseBot01.replyTag(msg, loveQueryDeclared, loveReplyDeclared);
 });
+
+client.on('ready', async () => {
+  const myGuild1 = await client.guilds.fetch('835568453649170472');
+  const roleChannel = myGuild1.channels.cache.find(ch => ch.id === '858001836410011658');
+  if(roleChannel) {
+    roles.colorRolesPl.forEach(el => createButton(el, roleChannel)); 
+    client.on('clickButton', async (myButton) => {
+        // const clickedMember = myButton.clicker.member;
+        // const role = myGuild1.roles.cache.find(r => r.id === "858054630160334848");
+        // clickedMember.roles.add(role);
+        // console.log(myButton.id);
+        // await myButton.reply.send(`Your new fighter is: ${myButton.id}`);
+    });
+
+  };
+});
+
+
 
 client.login('ODM1NTc3MTIwMjE0MDg5Nzc5.YIRd1Q.k-pDUvnJEfvjUbuQJbZSMp8PwmI');
