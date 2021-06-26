@@ -52,6 +52,11 @@ fileRoles.forEach(file => {
 });
 
 
+function deleteRole(clMember, clRole) {
+  console.log("removing", clRole.name);
+  // clMember.roles.remove(clRole); 
+}
+
 //Class Declarations
 
 class RoleMaker {
@@ -60,7 +65,7 @@ class RoleMaker {
   }
   createButton(el, roleChannel, file, color) {
     const addition = "_";
-    const newId = file.concat(addition ,el[0]).toLowerCase();
+    const newId = file.concat(addition ,el[0]);
     // console.log(file);
     // console.log(el[0]);
     // console.log(el[1]);
@@ -72,7 +77,7 @@ class RoleMaker {
       .setID(newId);
 
     this.roleArray.push(elCreated);
-    console.log(elCreated);
+    // console.log(elCreated);
   }
 
   sendRoleArrayToChannel(roleChannel) {
@@ -91,12 +96,27 @@ class RoleMaker {
       roleRows[j].addComponent(el);
       i++;
     })
-    console.log(roleRows);
+    // console.log(roleRows);
     while (roleRows.length){
       roleChannel.send("⠀",{components: roleRows.splice(0, 5)});
     }
   }
+
+  checkOne(clickedMember, guildName) {
+    const userRoles = clickedMember._roles;
+    console.log(userRoles);
+    userRoles.forEach( el => {
+      // const roleFound = roles.find(element => element[0] === el);
+      // console.log(el + roleFound);  
+      // if (roleFound) {
+      //   deleteRole(clickedMember, roleFound);
+      //   // console.log(roleFound);
+      // }
+      // // deleteRole(clickedMember, roleFound);
+      });
+  }
 }
+
 
 class InteractWith {
 
@@ -209,6 +229,19 @@ client.on('ready', async () => {
   const roleManager = new RoleMaker();
   roles.colorRolesPl.forEach(el => roleManager.createButton(el, roleChannel, fileRoleName, "grey")); 
   roleManager.sendRoleArrayToChannel(roleChannel);
+  if(roleChannel) {
+    client.on('clickButton', async (myButton) => {
+      console.log(myButton.id);
+      const [_, roleFinder] = myButton.id.split("_");
+      console.log(roleFinder);
+      const clickedMember = myButton.clicker.member;
+      let role = myGuild1.roles.cache.find(r => r.name === roleFinder);
+      roleManager.checkOne(clickedMember, myGuild1);
+      clickedMember.roles.add(role);
+      await myButton.reply.send(`Wybrałeś kolor: ${roleFinder}`);
+    });
+
+  };
 });
 
 
