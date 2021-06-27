@@ -52,9 +52,9 @@ fileRoles.forEach(file => {
 });
 
 
-function deleteRole(clMember, clRole) {
-  console.log("removing", clRole.name);
-  // clMember.roles.remove(clRole); 
+async function deleteRole(clMember, clRole) {
+  console.log("removing", clRole);
+  await clMember.roles.remove(clRole); 
 }
 
 //Class Declarations
@@ -102,17 +102,17 @@ class RoleMaker {
     }
   }
 
-  checkOne(clickedMember, guildName) {
-    const userRoles = clickedMember._roles;
-    console.log(userRoles);
-    userRoles.forEach( el => {
-      // const roleFound = roles.find(element => element[0] === el);
-      // console.log(el + roleFound);  
-      // if (roleFound) {
-      //   deleteRole(clickedMember, roleFound);
-      //   // console.log(roleFound);
-      // }
-      // // deleteRole(clickedMember, roleFound);
+  checkOne(clickedMember, rolefile) {
+    const userRoles = clickedMember.roles.cache;
+    userRoles.each( el => {
+      const emote = el.name;
+      const roleNameArray = [];
+      roles[rolefile].forEach(elementRole => roleNameArray.push(elementRole[0]));
+      const roleFound = roleNameArray.find(element => element === emote);
+      console.log(roleFound, el.name);
+      if (roleFound) {
+        deleteRole(clickedMember, el.id);
+      }
       });
   }
 }
@@ -232,11 +232,11 @@ client.on('ready', async () => {
   if(roleChannel) {
     client.on('clickButton', async (myButton) => {
       console.log(myButton.id);
-      const [_, roleFinder] = myButton.id.split("_");
+      const [roleFile, roleFinder] = myButton.id.split("_");
       console.log(roleFinder);
       const clickedMember = myButton.clicker.member;
       let role = myGuild1.roles.cache.find(r => r.name === roleFinder);
-      roleManager.checkOne(clickedMember, myGuild1);
+      roleManager.checkOne(clickedMember, roleFile);
       clickedMember.roles.add(role);
       await myButton.reply.send(`Wybrałeś kolor: ${roleFinder}`);
     });
