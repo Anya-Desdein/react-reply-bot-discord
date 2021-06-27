@@ -102,7 +102,7 @@ class RoleMaker {
     }
   }
 
-  checkOne(clickedMember, rolefile) {
+  checkOne(clickedMember, rolefile, roleFinder) {
     const userRoles = clickedMember.roles.cache;
     userRoles.each( el => {
       const emote = el.name;
@@ -114,6 +114,13 @@ class RoleMaker {
         deleteRole(clickedMember, el.id);
       }
       });
+  }
+
+  deleteSelf(roleFound, roleFinder, clickedMember, el.id)) {
+    if(roleFound === roleFinder) {
+      console.log( "rolefinder: " ,roleFinder, roleFound);
+      deleteRole(clickedMember, el.id);
+    }
   }
 }
 
@@ -236,7 +243,8 @@ client.on('ready', async () => {
       console.log(roleFinder);
       const clickedMember = myButton.clicker.member;
       let role = myGuild1.roles.cache.find(r => r.name === roleFinder);
-      roleManager.checkOne(clickedMember, roleFile);
+      roleManager.checkOne(clickedMember, roleFile, roleFinder);
+
       clickedMember.roles.add(role);
       await myButton.reply.send(`Wybrałeś kolor: ${roleFinder}`);
     });
