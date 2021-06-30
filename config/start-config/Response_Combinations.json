@@ -1,0 +1,26 @@
+[   
+  {
+    "triggers" :["sexListPl","sexListEn","sexListUniversal"],
+    "react" : ["sexReactionUniversal"],
+    "reply": []
+
+  },
+  {
+    "triggers":["helloListPl","helloListUniversal"],
+    "react" : [],
+    "reply": ["helloRepliesPl"]
+
+  },
+  {
+    "triggers" :["yourMomListPl"],
+    "react" : [],
+    "reply": ["yourMomRepliesPl"]
+
+  },
+  {
+    "triggers":["hugListPl", "hugListEn"],
+    "react" : [],
+    "reply": ["hugRepliesPl"]
+
+  }
+]
