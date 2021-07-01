@@ -1,23 +1,31 @@
 [   
   {
+    "isGuildWhitelist": true,
+    "guild": "835568453649170472",
     "triggers" :["sexListPl","sexListEn","sexListUniversal"],
     "react" : ["sexReactionUniversal"],
     "reply": []
 
   },
   {
+    "isGuildWhitelist": true,
+    "guild": "835568453649170472",
     "triggers":["helloListPl","helloListUniversal"],
     "react" : [],
     "reply": ["helloRepliesPl"]
 
   },
   {
+    "isGuildWhitelist": true,
+    "guild": "835568453649170472",
     "triggers" :["yourMomListPl"],
     "react" : [],
     "reply": ["yourMomRepliesPl"]
 
   },
   {
+    "isGuildWhitelist": true,
+    "guild": "835568453649170472",
     "triggers":["hugListPl", "hugListEn"],
     "react" : [],
     "reply": ["hugRepliesPl"]

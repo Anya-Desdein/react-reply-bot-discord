@@ -18,22 +18,16 @@ class Bot extends EventEmitter {
   allowChannels(guilds, msg) {
     const msgChannelID = msg.channel.id;
     if(msg.author.bot) {
-      console.log("1");
       return
     };
     Object.keys(guilds).forEach(el => {
-      const notOnWhitelist = (guilds[el]["isWhitelist"] && !(guilds[el].channels.includes(msgChannelID)));
-      const onBlacklist = ( (!(guilds[el]["isWhitelist"])) && (guilds[el].channels.includes(msgChannelID)) );
+      const guildEl = guilds[el];
+      const notOnWhitelist = guildEl.isWhitelist && !guildEl.channels.includes(msgChannelID);
+      const onBlacklist = !guildEl.isWhitelist && guildEl.channels.includes(msgChannelID);
       if( notOnWhitelist || onBlacklist ) {
-        console.log("2");  
         return
       };
-      console.log(msgChannelID);
-      console.log(guilds[el].guild);
-      if(msgChannelID === guilds[el].guild) {
-        console.log("3");;
-      }
-      console.log("4");
+      this.emit('Response');
     })
   }
 
@@ -77,10 +71,6 @@ class Bot extends EventEmitter {
     
     client.on('message', msg => {
       this.allowChannels(guilds, msg);
-      if(msg.channel.id !== '835632109300744262' && msg.channel.id !== '835568521312337980' && msg.channel.id !== '835579274865803325') {
-        return;
-      }
- 
     });
     client.on('ready', async () => {
       const myGuild1 = await client.guilds.fetch('835568453649170472');

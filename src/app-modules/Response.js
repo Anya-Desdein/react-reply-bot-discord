@@ -3,7 +3,7 @@ const EventEmitter = require('events');
 const path = require('path');
 
 class Response extends EventEmitter {
-  constructor(startConfig, dirname, dbFolderPath, fileStorageInstance, client) {
+  constructor(startConfig, dirname, dbFolderPath, fileStorageInstance) {
     super();
     this.startConfig = startConfig;
     this.dirname = dirname;
@@ -12,7 +12,13 @@ class Response extends EventEmitter {
     this.combinations;
     this.reactsOn = false;
     this.repliesOn = false;
+    this.on('Response', () => this.getEventData());
   }
+  
+  getEventData() {
+    console.log("dupa");
+  }
+
   readStart(){
     if(this.startConfig){
       if(this.startConfig["reactHow"]) {
