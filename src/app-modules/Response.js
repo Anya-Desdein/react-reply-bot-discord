@@ -1,25 +1,19 @@
 const fs = require('fs');
-const EventEmitter = require('events');
 const path = require('path');
+const BaseModule = require('./BaseModule');
 
-class Response extends EventEmitter {
-  constructor(startConfig, dirname, dbFolderPath, fileStorageInstance) {
+class Response extends BaseModule {
+  constructor(dirname, dbFolderPath, fileStorageInstance) {
     super();
-    this.startConfig = startConfig;
     this.dirname = dirname;
     this.startDbFolderPath = dbFolderPath;
     this.fileStorageInstance = fileStorageInstance;
-    this.combinations;
-    this.reactsOn = false;
-    this.repliesOn = false;
-    this.on('Response', () => this.getEventData());
-  }
-  
-  getEventData() {
-    console.log("dupa");
+    this.combinations = null;
+
+    this.getResponseCombinations();
   }
 
-  readStart(){
+  readStart() {
     if(this.startConfig){
       if(this.startConfig["reactHow"]) {
         this.reactsOn = true;
@@ -27,21 +21,22 @@ class Response extends EventEmitter {
       if(this.startConfig["replyHow"]) {
         this.repliesOn = true;
       }
-      this.getResponseCombinations();
     }
   }
+
   sleep(ms) {
     return new Promise(r => setTimeout(r, ms));
-  }  
+  } 
+
   randomizeResponse(data) {
     if(data) {
       return data[Math.floor(Math.random()*data.length)];
     }
   }
-  getResponseCombinations(){
-    this.combinations = this.fileStorageInstance.readFile(this.startDbFolderPath,"Response_Combinations.json");
-    // console.log(this.combinations);
 
+  getResponseCombinations(){
+    this.combinations = this.fileStorageInstance.readFile(this.startDbFolderPath, "Response_Combinations.json");
+    console.log(this.combinations);
   }
 };
 

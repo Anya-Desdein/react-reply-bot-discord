@@ -3,8 +3,20 @@
   "guilds" : [
     { 
       "guild": "835568453649170472",
-      "isWhitelist": true,
-      "channels" : [ "858001836410011658" , "835579274865803325", "835568521312337980"] 
+      "modules":  {
+        "response": {
+          "reactHow": { 
+            "enabled": true,
+            "isWhitelist": true,
+            "channels" : [ "858001836410011658" , "835579274865803325", "835568521312337980"]     
+          },          
+          "replyHow": { 
+            "enabled": true,
+            "isWhitelist": true,
+            "channels" : [ "858001836410011658" , "835579274865803325", "835568521312337980"]     
+          }
+        }
+      }
     }
   ]
 }

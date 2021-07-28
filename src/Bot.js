@@ -1,18 +1,16 @@
-const EventEmitter = require('events');
 const fs = require('fs');
 const path = require('path');
 const Discord = require('discord.js');
 const FileStorage = require('./FileStorage.js');
 
 //Start bot
-class Bot extends EventEmitter {
+class Bot {
   constructor() {
-    super();
     this.dbFolderPath;
-    this.possibleModules = {
-      responseModule: require('./app-modules/Response.js'),
+    this.availableModules = {
+      response: require('./app-modules/Response.js'),
     }
-    this.ModulesInUse = [];
+    this.loadedModules = [];
   }
 
   allowChannels(guilds, msg) {
@@ -27,36 +25,27 @@ class Bot extends EventEmitter {
       if( notOnWhitelist || onBlacklist ) {
         return
       };
-      this.emit('Response');
     })
   }
 
   readStartConfig(dirName, fileStorageInstance) {
     this.dbFolderPath = path.join(dirName,"start-config");
-    let readBotConfig = fileStorageInstance.readFile(this.dbFolderPath, "BotData.json");
-    readBotConfig = JSON.parse(readBotConfig);
-    const clientToken = readBotConfig["clientToken"];
-    const guilds = readBotConfig["guilds"];
-    let readModuleConfig = fileStorageInstance.readFile(this.dbFolderPath, "Modules_In_Use.json");
-    readModuleConfig = JSON.parse(readModuleConfig);
-    const configMainKeys = Object.keys(readModuleConfig);
-
-    return {readBotConfig, clientToken, readModuleConfig, configMainKeys, guilds}
+    const readBotConfig = JSON.parse(fileStorageInstance.readFile(this.dbFolderPath, "BotData.json"));
+    const { clientToken, guilds } = readBotConfig;
+    return {readBotConfig, clientToken, guilds}
   }
 
   startBot(dirName) {
     const client = new Discord.Client();
     const fileStorageInstance = new FileStorage();
-    const {readBotConfig, clientToken, readModuleConfig, configMainKeys, guilds} = this.readStartConfig(dirName, fileStorageInstance);
-    Object.keys(this.possibleModules).forEach(el => {
-      configMainKeys.forEach(el2 => {
-        if (el2 === el) {
-          const moduleConfig = readModuleConfig[el];
-          this.ModulesInUse.push(el); 
-          const moduleInstance = new this.possibleModules[el](moduleConfig, dirName, this.dbFolderPath, fileStorageInstance);
-          moduleInstance.readStart();
-        }
-      }) 
+    const {readBotConfig, clientToken, guilds} = this.readStartConfig(dirName, fileStorageInstance);
+    Object.keys(this.availableModules).forEach(moduleName => {
+      let moduleConfig = {};
+      guilds.forEach(el => {
+        moduleConfig[el.guild] = el.modules[moduleName];
+      });
+      const moduleInstance = new this.availableModules[moduleName](moduleConfig, dirName, this.dbFolderPath, fileStorageInstance);
+      this.loadedModules.push(moduleInstance); 
     })
 
     client.on('ready', () => {
@@ -79,7 +68,7 @@ class Bot extends EventEmitter {
     });
     
     client.login(clientToken);
-    console.log("Used modules:" ,this.ModulesInUse);
+    console.log("Used modules:", this.loadedModules);
   }
 }
 
