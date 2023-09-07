@@ -36,7 +36,6 @@ class InteractWith {
     const matchingRegexArray = replyToArray.find(r => ` ${msg.content} `.match(r));
     if (matchingRegexArray) {
       const match = ` ${msg.content} `.match(matchingRegexArray);
-      // console.log(match[1]);
       if (match) {
         let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
         for (let item of randomReply) {
@@ -48,21 +47,21 @@ class InteractWith {
           await sleep(1600);
           msg.channel.send(item);
           msg.channel.stopTyping();
+          return true; 
         }
       }
     }
+    return false;
   }
 
   async replyTag(msg, replyToArray, replyHowArray) {
     const matchingRegexArray = replyToArray.find(r => ` ${msg.content} `.match(r));
     if (matchingRegexArray) {
       const match = ` ${msg.content} `.match(matchingRegexArray);
-      // console.log(match[1]);
       if (match) {
         let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
         for (let item of randomReply) {
           const personTag = msg.content.replace(match[1], '');
-          // console.log(match[1][0]);
           if (match[1][0] === "!" && msg.content.indexOf(match[1]) === 0 && personTag) {
             item = item
               .replace('$person$', personTag)
@@ -74,9 +73,11 @@ class InteractWith {
           await sleep(1600);
           msg.channel.send(item);
           msg.channel.stopTyping();
+          return true;
         }
       }
     }
+    return false;
   }
 
   //react by using an emoticon, picks random reaction from reactions array, reacts with it.
@@ -90,24 +91,20 @@ class InteractWith {
       }
     }
   }
-  
-}
 
-const curseBot01 = new InteractWith();
-curseBot01.react(msg, sexQueryDeclared, sexReplyDeclared);
-curseBot01.reply(msg, helloQueryDeclared, helloReplyDeclared);
-curseBot01.replyTag(msg, yourMomQueryDeclared, yourMomReplyDeclared);
-curseBot01.replyTag(msg, loveQueryDeclared, loveReplyDeclared);
+}
 
 const client = new Discord.Client();
 
-client.on('message', msg => {
+client.on('message', async msg => {
   if (msg.author.bot) {
     return;
   }
 
+  let hasInteracted = false;
+
   // Declare how you want to reply and react and to what
-  const sexQueryDeclared = [...reactReplyTo.sexListPl, ...reactReplyTo.sexListPl, ...reactReplyTo.sexListUniversal];
+  const sexQueryDeclared = [...reactReplyTo.sexListPl, ...reactReplyTo.sexListUniversal];
   const sexReplyDeclared = [...reactHow.sexReactionUniversal];
   const helloQueryDeclared = [...reactReplyTo.helloListPl, ...reactReplyTo.helloListUniversal];
   const helloReplyDeclared = [...replyHow.helloRepliesPl];
@@ -117,10 +114,17 @@ client.on('message', msg => {
   const loveReplyDeclared = [...replyHow.loveRepliesPl];
 
   const curseBot01 = new InteractWith();
+
   curseBot01.react(msg, sexQueryDeclared, sexReplyDeclared);
-  curseBot01.reply(msg, helloQueryDeclared, helloReplyDeclared);
-  curseBot01.replyTag(msg, yourMomQueryDeclared, yourMomReplyDeclared);
-  curseBot01.replyTag(msg, loveQueryDeclared, loveReplyDeclared);
+
+  hasInteracted = await curseBot01.reply(msg, helloQueryDeclared, helloReplyDeclared) || hasInteracted;
+  if (hasInteracted) return; // Break out if a reply/reaction was made
+
+  hasInteracted = await curseBot01.replyTag(msg, yourMomQueryDeclared, yourMomReplyDeclared) || hasInteracted;
+  if (hasInteracted) return;
+
+  hasInteracted = await curseBot01.replyTag(msg, loveQueryDeclared, loveReplyDeclared) || hasInteracted;
+  if (hasInteracted) return;
 });
 
 client.login('client_login_number');
