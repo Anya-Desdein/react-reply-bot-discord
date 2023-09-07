@@ -1,6 +1,7 @@
 const Discord = require('discord.js');
 const fs = require('fs');
 const path = require('path');
+require('dotenv').config();
 
 const reactReplyTo = {};
 const reactHow = {};
@@ -110,7 +111,7 @@ client.on('message', async msg => {
   const helloReplyDeclared = [...replyHow.helloRepliesPl];
   const yourMomQueryDeclared = [...reactReplyTo.yourMomListPl];
   const yourMomReplyDeclared = [...replyHow.yourMomRepliesPl];
-  const loveQueryDeclared = [...reactReplyTo.loveListPl, ...reactReplyTo.loveListEng];
+  const loveQueryDeclared = [...reactReplyTo.loveListPl, ...reactReplyTo.loveListEn];
   const loveReplyDeclared = [...replyHow.loveRepliesPl];
 
   const curseBot01 = new InteractWith();
@@ -127,5 +128,5 @@ client.on('message', async msg => {
   if (hasInteracted) return;
 });
 
-client.login('client_login_number');
+client.login(process.env.DISCORD_BOT_TOKEN);
 
