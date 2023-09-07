@@ -31,8 +31,73 @@ function sleep(ms) {
 });
 
 class InteractWith {
-  // ... [rest of the InteractWith class remains unchanged]
+  //reply by writing a message
+  async reply(msg, replyToArray, replyHowArray) {
+    const matchingRegexArray = replyToArray.find(r => ` ${msg.content} `.match(r));
+    if (matchingRegexArray) {
+      const match = ` ${msg.content} `.match(matchingRegexArray);
+      // console.log(match[1]);
+      if (match) {
+        let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
+        for (let item of randomReply) {
+          item = item
+            .replace('$author$', msg.author.username)
+            .replace('$match$', match[1]);
+          item = item[0].toUpperCase() + item.substr(1);
+          msg.channel.startTyping();
+          await sleep(1600);
+          msg.channel.send(item);
+          msg.channel.stopTyping();
+        }
+      }
+    }
+  }
+
+  async replyTag(msg, replyToArray, replyHowArray) {
+    const matchingRegexArray = replyToArray.find(r => ` ${msg.content} `.match(r));
+    if (matchingRegexArray) {
+      const match = ` ${msg.content} `.match(matchingRegexArray);
+      // console.log(match[1]);
+      if (match) {
+        let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
+        for (let item of randomReply) {
+          const personTag = msg.content.replace(match[1], '');
+          // console.log(match[1][0]);
+          if (match[1][0] === "!" && msg.content.indexOf(match[1]) === 0 && personTag) {
+            item = item
+              .replace('$person$', personTag)
+          } else {
+            item = item.replace('$person$', msg.author.username)
+          }
+          item = item[0].toUpperCase() + item.substr(1);
+          msg.channel.startTyping();
+          await sleep(1600);
+          msg.channel.send(item);
+          msg.channel.stopTyping();
+        }
+      }
+    }
+  }
+
+  //react by using an emoticon, picks random reaction from reactions array, reacts with it.
+  react(msg, reactToArray, reactHowArray) {
+    const matchingRegexArray = reactToArray.find(r => ` ${msg.content} `.match(r));
+    if (matchingRegexArray) {
+      const match = ` ${msg.content} `.match(matchingRegexArray);
+      if (match) {
+        const randomReaction = reactHowArray[Math.floor(Math.random() * reactHowArray.length)];
+        randomReaction.forEach(el => msg.react(el));
+      }
+    }
+  }
+  
 }
+
+const curseBot01 = new InteractWith();
+curseBot01.react(msg, sexQueryDeclared, sexReplyDeclared);
+curseBot01.reply(msg, helloQueryDeclared, helloReplyDeclared);
+curseBot01.replyTag(msg, yourMomQueryDeclared, yourMomReplyDeclared);
+curseBot01.replyTag(msg, loveQueryDeclared, loveReplyDeclared);
 
 const client = new Discord.Client();
 
@@ -59,3 +124,4 @@ client.on('message', msg => {
 });
 
 client.login('client_login_number');
+
