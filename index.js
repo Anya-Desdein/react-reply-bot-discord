@@ -17,19 +17,20 @@ function sleep(ms) {
   files.forEach(file => {
     const extension = path.extname(file);
     const fileName = path.basename(file, extension);
-    if (extension === '.json') {
-      if (dir === 'reactReplyTo') {
+    if (dir === 'reactReplyTo') {
+      if (extension === '.json' || extension === '.txt') {
         // For reactReplyTo files, read line by line, trim whitespace, and convert to RegExp
         const lines = fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8').split('\n');
         reactReplyTo[fileName] = lines.map(line => new RegExp(line.trim()));
-      } else {
-        const jsonData = JSON.parse(fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8'));
-        if (dir === 'reactHow') reactHow[fileName] = jsonData;
-        if (dir === 'replyHow') replyHow[fileName] = jsonData;
       }
+    } else if (extension === '.json') {
+      const jsonData = JSON.parse(fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8'));
+      if (dir === 'reactHow') reactHow[fileName] = jsonData;
+      if (dir === 'replyHow') replyHow[fileName] = jsonData;
     }
   });
 });
+
 
 class InteractWith {
   //reply by writing a message
@@ -128,5 +129,6 @@ client.on('message', async msg => {
   if (hasInteracted) return;
 });
 
+console.log('bubu');
 client.login(process.env.DISCORD_BOT_TOKEN);
 

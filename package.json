@@ -1,7 +1,7 @@
 {
   "name": "react-reply-bot",
   "version": "0.3.0",
-  "description": "This is the 3rd version of this bot, should be usable in a few minor updates",
+  "description": "This is the 1st public working version of the bot. Have fun.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -10,7 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "discord-buttons": "^3.2.1",
-    "discord.js": "^14.13.0",
+    "discord.js": "^12.5.3",
     "dotenv": "^16.3.1"
   }
 }
