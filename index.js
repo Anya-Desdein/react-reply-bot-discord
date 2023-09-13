@@ -31,86 +31,91 @@ function sleep(ms) {
   });
 });
 
+class BaseInteract {
+  constructor() {
+  }
 
-class InteractWith {
-  //reply by writing a message
-  async reply(msg, replyToArray, replyHowArray) {
-    // Sort the replyToArray by string length in descending order
-    const sortedReplyToArray = [...replyToArray].sort((a, b) => b.toString().length - a.toString().length);
-    
-    const matchingRegexArray = sortedReplyToArray.find(r => ` ${msg.content} `.match(r));
-    if (matchingRegexArray) {
-      const match = ` ${msg.content} `.match(matchingRegexArray);
-      if (match) {
-        let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
-        for (let item of randomReply) {
-          item = item
-            .replace('$author$', msg.author.username)
-            .replace('$match$', match[1]);
-          item = item[0].toUpperCase() + item.substr(1);
-          msg.channel.startTyping();
-          await sleep(1600);
-          msg.channel.send(item);
-          msg.channel.stopTyping();
-          return true;
-        }
-      }
+  // Common matching function to find regex in the message content
+  findMatch(msg, regexArray) {
+    const sortedRegexArray = [...regexArray].sort((a, b) => b.toString().length - a.toString().length);
+    const matchingRegex = sortedRegexArray.find(r => `${msg.content}`.match(r));
+    if (matchingRegex) {
+      return ` ${msg.content} `.match(matchingRegex);
+    }
+    return null;
+  }
+
+  // This should be implemented by derived classes
+  async processMatch(msg, match, responseArray) {
+    throw new Error("This method should be implemented by the derived class");
+  }
+
+  async interact(msg, triggerArray, responseArray) {
+    const match = this.findMatch(msg, triggerArray);
+    if (match) {
+      return await this.processMatch(msg, match, responseArray);
     }
     return false;
+  }
 }
 
-  async replyTag(msg, replyToArray, replyHowArray) {
-    const sortedReplyToArray = [...replyToArray].sort((a, b) => b.toString().length - a.toString().length);
-    const matchingRegexArray = sortedReplyToArray.find(r => msg.content.match(r));
-    if (matchingRegexArray) {
-      const match = msg.content.match(matchingRegexArray);
-      if (match && match[0]) {
-        let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
-        for (let item of randomReply) {
-          // Split message by the matched trigger phrase, and remove empty strings
-          console.log(match);
-          const parts = msg.content.split(match[0]).filter(Boolean);
-
-          let namePart;
-          if (match[0].startsWith("!")) {
-            // If the matched phrase starts with '!', use the rest of the message or author's name if no text is present
-            if (parts.length === 0) {
-              namePart = msg.author.username;
-            } else {
-              namePart = parts.join(' ').replace(/\s+/g, " ").trim();
-            }
-          } else {
-            // Else, use the sender's username
-            namePart = msg.author.username;
-          }
-
-          // Compose the response
-          item = item.replace('$person$', namePart);
-          item = item[0].toUpperCase() + item.substr(1);
-          msg.channel.startTyping();
-          await sleep(1600);
-          msg.channel.send(item);
-          msg.channel.stopTyping();
-          return true;
-        }
-      }
+class ReplyInteract extends BaseInteract {
+  async processMatch(msg, match, replyHowArray) {
+    let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
+    for (let item of randomReply) {
+      item = item
+        .replace('$author$', msg.author.username)
+        .replace('$match$', match[1]);
+      item = item[0].toUpperCase() + item.substr(1);
+      await sendTypingAndMessage(msg, item);
+      return true;
     }
     return false;
   }
+}
 
 
-  //react by using an emoticon, picks random reaction from reactions array, reacts with it.
-  react(msg, reactToArray, reactHowArray) {
-    const matchingRegexArray = reactToArray.find(r => ` ${msg.content} `.match(r));
-    if (matchingRegexArray) {
-      const match = ` ${msg.content} `.match(matchingRegexArray);
-      if (match) {
-        const randomReaction = reactHowArray[Math.floor(Math.random() * reactHowArray.length)];
-        randomReaction.forEach(el => msg.react(el));
+class TagInteract extends BaseInteract {
+  async processMatch(msg, match, replyHowArray) {
+    let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
+    for (let item of randomReply) {
+      const parts = msg.content.split(match[0]).filter(Boolean);
+
+      let namePart;
+      if (match[0].startsWith("!")) {
+        if (parts.length === 0) {
+          namePart = msg.author.username;
+        } else {
+          namePart = parts.join(' ').replace(/\s+/g, " ").trim();
+        }
+      } else {
+        namePart = msg.author.username;
       }
-    }
-  }
 
+      item = item.replace('$person$', namePart);
+      item = item[0].toUpperCase() + item.substr(1);
+      await sendTypingAndMessage(msg, item);
+      return true;
+    }
+    return false;
+  }
+}
+
+
+class ReactInteract extends BaseInteract {
+  processMatch(msg, match, reactHowArray) {
+    const randomReaction = reactHowArray[Math.floor(Math.random() * reactHowArray.length)];
+    randomReaction.forEach(el => msg.react(el));
+    return true;
+  }
+}
+
+
+async function sendTypingAndMessage(msg, messageContent) {
+  msg.channel.startTyping();
+  await sleep(1600);
+  msg.channel.send(messageContent);
+  msg.channel.stopTyping();
 }
 
 const client = new Discord.Client();
@@ -132,17 +137,19 @@ client.on('message', async msg => {
   const loveQueryDeclared = [...reactReplyTo.loveListPl, ...reactReplyTo.loveListEn];
   const loveReplyDeclared = [...replyHow.loveRepliesPl];
 
-  const curseBot01 = new InteractWith();
+  const reactInteractor = new ReactInteract();
+  const replyInteractor = new ReplyInteract();
+  const tagInteractor = new TagInteract();
 
-  curseBot01.react(msg, sexQueryDeclared, sexReplyDeclared);
+  reactInteractor.interact(msg, sexQueryDeclared, sexReplyDeclared);
 
-  hasInteracted = await curseBot01.reply(msg, helloQueryDeclared, helloReplyDeclared) || hasInteracted;
+  hasInteracted = await replyInteractor.interact(msg, helloQueryDeclared, helloReplyDeclared) || hasInteracted;
   if (hasInteracted) return; // Break out if a reply/reaction was made
 
-  hasInteracted = await curseBot01.replyTag(msg, yourMomQueryDeclared, yourMomReplyDeclared) || hasInteracted;
+  hasInteracted = await tagInteractor.interact(msg, yourMomQueryDeclared, yourMomReplyDeclared) || hasInteracted;
   if (hasInteracted) return;
 
-  hasInteracted = await curseBot01.replyTag(msg, loveQueryDeclared, loveReplyDeclared) || hasInteracted;
+  hasInteracted = await tagInteractor.interact(msg, loveQueryDeclared, loveReplyDeclared) || hasInteracted;
   if (hasInteracted) return;
 });
 
