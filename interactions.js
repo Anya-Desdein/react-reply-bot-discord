@@ -19,17 +19,17 @@ module.exports = {
       },
       {
         type: 'tag',
-        values: ['love'],
+        queries: ['careTags'],
         replies: ['careRepliesPl']
       },
       {
         type: 'tag',
-        values: ['cześć', 'hej', 'siemka', 'siema'],
+        queries: ['helloTags'],
         replies: ['helloRepliesPl']
       },
       {
         type: 'tag',
-        values: ['+t[wf][oóu]+j[ąa]*\s+sta+r([ąay]|ej|[ąoę]m)+'],
+        queries: ['yourMomTags'],
         replies: ['yourMomRepliesPl']
       },
       // Add more interactions here...

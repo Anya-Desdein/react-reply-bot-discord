@@ -14,14 +14,14 @@ function sleep(ms) {
 }
 
 // Read files
-['reactReplyTo', 'reactHow', 'replyHow'].forEach(dir => {
+['reactReplyTo', 'reactHow', 'replyHow', 'commandTags'].forEach(dir => {
   const files = fs.readdirSync(`config/${dir}`);
   files.forEach(file => {
     const extension = path.extname(file);
     const fileName = path.basename(file, extension);
-    if (dir === 'reactReplyTo') {
+    if (dir === 'reactReplyTo' || dir === 'commandTags') {
       if (extension === '.json' || extension === '.txt') {
-        // For reactReplyTo files, read line by line, trim whitespace, and convert to RegExp
+        // Read line by line, trim whitespace, and convert to RegExp
         const lines = fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8').split('\n');
         reactReplyTo[fileName] = lines.map(line => new RegExp(line.trim()));
       }
@@ -55,6 +55,7 @@ class BaseInteract {
   async interact(msg, triggerArray, responseArray) {
     const match = this.findMatch(msg, triggerArray);
     if (match) {
+      console.log(match);
       return await this.processMatch(msg, match, responseArray);
     }
     return false;
@@ -105,7 +106,6 @@ class ReactInteract extends BaseInteract {
 
 async function sendTypingAndMessage(msg, messageContent) {
   msg.channel.startTyping();
-  await sleep(1600);
   msg.channel.send(messageContent);
   msg.channel.stopTyping();
 }
@@ -127,36 +127,40 @@ client.on('message', async msg => {
     // Access the interactions array from interactions.js
     let queryDeclared = [];
     let replyDeclared = [];
-
-    for (let queryKey of interaction.queries) {
-      if (reactReplyTo[queryKey]) { // Check if the queryKey exists in reactReplyTo
-        queryDeclared = [...queryDeclared, ...reactReplyTo[queryKey]];
-      }
-    }
-
-    for (let replyKey of interaction.replies) {
-      if (reactHow[replyKey]) {
-        replyDeclared = [...replyDeclared, ...reactHow[replyKey]];
-      } else if (replyHow[replyKey]) {
-        replyDeclared = [...replyDeclared, ...replyHow[replyKey]];
-      }
-    }
-
-    if (interaction.type === 'react') {
-      console.log("Processing a react interaction");
-      reactInteractor.interact(msg, queryDeclared, replyDeclared);
-      console.log(hasInteracted);
-    } else if (interaction.type === 'reply') {
-      console.log("Processing a reply interaction");
-      hasInteracted = await replyInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
-      console.log(hasInteracted);
-    } else if (interaction.type === 'tag') {
-      console.log("Processing a tag interaction");
-      hasInteracted = await tagInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
-      console.log(hasInteracted);
-    }
     
-    if (hasInteracted) return; 
+
+      for (let queryKey of interaction.queries) {
+        if (reactReplyTo[queryKey]) { // Check if the queryKey exists in reactReplyTo
+          queryDeclared = [...queryDeclared, ...reactReplyTo[queryKey]];
+          console.log(typeof queryDeclared);
+          
+        }
+      }
+  
+      for (let replyKey of interaction.replies) {
+        if (reactHow[replyKey]) {
+          replyDeclared = [...replyDeclared, ...reactHow[replyKey]];
+        } else if (replyHow[replyKey]) {
+          replyDeclared = [...replyDeclared, ...replyHow[replyKey]];
+        }
+      }
+  
+      if (interaction.type === 'react') {
+        console.log("Processing a react interaction");
+        reactInteractor.interact(msg, queryDeclared, replyDeclared);
+        console.log(hasInteracted);
+      }else if (interaction.type === 'tag') {
+        console.log("Processing a tag interaction");
+        hasInteracted = await tagInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
+        console.log(hasInteracted);
+      } else if (interaction.type === 'reply') {
+        console.log("Processing a reply interaction");
+        hasInteracted = await replyInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
+        console.log(hasInteracted);
+      } 
+      
+      if (hasInteracted) return; 
+
   }
 });
 
