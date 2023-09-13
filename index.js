@@ -49,7 +49,7 @@ class InteractWith {
           await sleep(1600);
           msg.channel.send(item);
           msg.channel.stopTyping();
-          return true; 
+          return true;
         }
       }
     }
@@ -57,19 +57,31 @@ class InteractWith {
   }
 
   async replyTag(msg, replyToArray, replyHowArray) {
-    const matchingRegexArray = replyToArray.find(r => ` ${msg.content} `.match(r));
+    const sortedReplyToArray = [...replyToArray].sort((a, b) => b.toString().length - a.toString().length);
+    const matchingRegexArray = sortedReplyToArray.find(r => msg.content.match(r));
     if (matchingRegexArray) {
-      const match = ` ${msg.content} `.match(matchingRegexArray);
-      if (match) {
+      const match = msg.content.match(matchingRegexArray);
+      if (match && match[0]) {
         let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
         for (let item of randomReply) {
-          const personTag = msg.content.replace(match[1], '');
-          if (match[1][0] === "!" && msg.content.indexOf(match[1]) === 0 && personTag) {
-            item = item
-              .replace('$person$', personTag)
+          // Split message by the matched trigger phrase, and remove empty strings
+          const parts = msg.content.split(match[0]).filter(Boolean);
+
+          let namePart;
+          if (match[0].startsWith("!")) {
+            // If the matched phrase starts with '!', use the rest of the message or author's name if no text is present
+            if (parts.length === 0) {
+              namePart = msg.author.username;
+            } else {
+              namePart = parts.join(' ').replace(/\s+/g, " ").trim();
+            }
           } else {
-            item = item.replace('$person$', msg.author.username)
+            // Else, use the sender's username
+            namePart = msg.author.username;
           }
+
+          // Compose the response
+          item = item.replace('$person$', namePart);
           item = item[0].toUpperCase() + item.substr(1);
           msg.channel.startTyping();
           await sleep(1600);
@@ -81,6 +93,7 @@ class InteractWith {
     }
     return false;
   }
+
 
   //react by using an emoticon, picks random reaction from reactions array, reacts with it.
   react(msg, reactToArray, reactHowArray) {
@@ -129,6 +142,6 @@ client.on('message', async msg => {
   if (hasInteracted) return;
 });
 
-console.log('bubu');
+console.log('React-reply-bot initialized');
 client.login(process.env.DISCORD_BOT_TOKEN);
 
