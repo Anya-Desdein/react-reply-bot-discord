@@ -35,7 +35,10 @@ function sleep(ms) {
 class InteractWith {
   //reply by writing a message
   async reply(msg, replyToArray, replyHowArray) {
-    const matchingRegexArray = replyToArray.find(r => ` ${msg.content} `.match(r));
+    // Sort the replyToArray by string length in descending order
+    const sortedReplyToArray = [...replyToArray].sort((a, b) => b.toString().length - a.toString().length);
+    
+    const matchingRegexArray = sortedReplyToArray.find(r => ` ${msg.content} `.match(r));
     if (matchingRegexArray) {
       const match = ` ${msg.content} `.match(matchingRegexArray);
       if (match) {
@@ -54,7 +57,7 @@ class InteractWith {
       }
     }
     return false;
-  }
+}
 
   async replyTag(msg, replyToArray, replyHowArray) {
     const sortedReplyToArray = [...replyToArray].sort((a, b) => b.toString().length - a.toString().length);
@@ -65,6 +68,7 @@ class InteractWith {
         let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
         for (let item of randomReply) {
           // Split message by the matched trigger phrase, and remove empty strings
+          console.log(match);
           const parts = msg.content.split(match[0]).filter(Boolean);
 
           let namePart;
