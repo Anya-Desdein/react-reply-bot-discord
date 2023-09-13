@@ -1,2 +1,1 @@
 t[wf][oóu]+j[ąa]*\s+sta+r([aąy]|ej|[ąoę]m)+
-!+t[wf][oóu]+j[ąa]*\s+sta+r([ąay]|ej|[ąoę]m)+

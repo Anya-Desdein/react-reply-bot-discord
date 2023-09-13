@@ -3,6 +3,8 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
+const interactions= require('./interactions');
+
 const reactReplyTo = {};
 const reactHow = {};
 const replyHow = {};
@@ -59,6 +61,23 @@ class BaseInteract {
   }
 }
 
+class TagInteract extends BaseInteract {
+  async processMatch(msg, match) {
+    const tag = match[0];
+    for (const interaction of interactions) {
+      if (interaction.type === 'tag' && interaction.values.includes(tag)) {
+        const randomReply = interaction.replies[Math.floor(Math.random() * interaction.replies.length)];
+        const namePart = msg.author.username;
+        let item = randomReply.replace('$person$', namePart);
+        item = item[0].toUpperCase() + item.substr(1);
+        await sendTypingAndMessage(msg, item);
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
 class ReplyInteract extends BaseInteract {
   async processMatch(msg, match, replyHowArray) {
     let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
@@ -74,42 +93,15 @@ class ReplyInteract extends BaseInteract {
   }
 }
 
-
-class TagInteract extends BaseInteract {
-  async processMatch(msg, match, replyHowArray) {
-    let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
-    for (let item of randomReply) {
-      const parts = msg.content.split(match[0]).filter(Boolean);
-
-      let namePart;
-      if (match[0].startsWith("!")) {
-        if (parts.length === 0) {
-          namePart = msg.author.username;
-        } else {
-          namePart = parts.join(' ').replace(/\s+/g, " ").trim();
-        }
-      } else {
-        namePart = msg.author.username;
-      }
-
-      item = item.replace('$person$', namePart);
-      item = item[0].toUpperCase() + item.substr(1);
-      await sendTypingAndMessage(msg, item);
-      return true;
-    }
-    return false;
-  }
-}
-
-
 class ReactInteract extends BaseInteract {
-  processMatch(msg, match, reactHowArray) {
+  async processMatch(msg, match, reactHowArray) {
     const randomReaction = reactHowArray[Math.floor(Math.random() * reactHowArray.length)];
-    randomReaction.forEach(el => msg.react(el));
+    for (const el of randomReaction) {
+      await msg.react(el);
+    }
     return true;
   }
 }
-
 
 async function sendTypingAndMessage(msg, messageContent) {
   msg.channel.startTyping();
@@ -120,37 +112,52 @@ async function sendTypingAndMessage(msg, messageContent) {
 
 const client = new Discord.Client();
 
+const reactInteractor = new ReactInteract();
+const replyInteractor = new ReplyInteract();
+const tagInteractor = new TagInteract();
+
 client.on('message', async msg => {
   if (msg.author.bot) {
     return;
   }
-
+  console.log(`Received message: ${msg.content}`);
   let hasInteracted = false;
+  
+  for (let interaction of interactions.interactions) {  
+    // Access the interactions array from interactions.js
+    let queryDeclared = [];
+    let replyDeclared = [];
 
-  // Declare how you want to reply and react and to what
-  const sexQueryDeclared = [...reactReplyTo.sexListPl, ...reactReplyTo.sexListUniversal];
-  const sexReplyDeclared = [...reactHow.sexReactionUniversal];
-  const helloQueryDeclared = [...reactReplyTo.helloListPl, ...reactReplyTo.helloListUniversal];
-  const helloReplyDeclared = [...replyHow.helloRepliesPl];
-  const yourMomQueryDeclared = [...reactReplyTo.yourMomListPl];
-  const yourMomReplyDeclared = [...replyHow.yourMomRepliesPl];
-  const loveQueryDeclared = [...reactReplyTo.loveListPl, ...reactReplyTo.loveListEn];
-  const loveReplyDeclared = [...replyHow.loveRepliesPl];
+    for (let queryKey of interaction.queries) {
+      if (reactReplyTo[queryKey]) { // Check if the queryKey exists in reactReplyTo
+        queryDeclared = [...queryDeclared, ...reactReplyTo[queryKey]];
+      }
+    }
 
-  const reactInteractor = new ReactInteract();
-  const replyInteractor = new ReplyInteract();
-  const tagInteractor = new TagInteract();
+    for (let replyKey of interaction.replies) {
+      if (reactHow[replyKey]) {
+        replyDeclared = [...replyDeclared, ...reactHow[replyKey]];
+      } else if (replyHow[replyKey]) {
+        replyDeclared = [...replyDeclared, ...replyHow[replyKey]];
+      }
+    }
 
-  reactInteractor.interact(msg, sexQueryDeclared, sexReplyDeclared);
-
-  hasInteracted = await replyInteractor.interact(msg, helloQueryDeclared, helloReplyDeclared) || hasInteracted;
-  if (hasInteracted) return; // Break out if a reply/reaction was made
-
-  hasInteracted = await tagInteractor.interact(msg, yourMomQueryDeclared, yourMomReplyDeclared) || hasInteracted;
-  if (hasInteracted) return;
-
-  hasInteracted = await tagInteractor.interact(msg, loveQueryDeclared, loveReplyDeclared) || hasInteracted;
-  if (hasInteracted) return;
+    if (interaction.type === 'react') {
+      console.log("Processing a react interaction");
+      reactInteractor.interact(msg, queryDeclared, replyDeclared);
+      console.log(hasInteracted);
+    } else if (interaction.type === 'reply') {
+      console.log("Processing a reply interaction");
+      hasInteracted = await replyInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
+      console.log(hasInteracted);
+    } else if (interaction.type === 'tag') {
+      console.log("Processing a tag interaction");
+      hasInteracted = await tagInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
+      console.log(hasInteracted);
+    }
+    
+    if (hasInteracted) return; 
+  }
 });
 
 console.log('React-reply-bot initialized');
