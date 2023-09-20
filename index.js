@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 require('dotenv').config();
 
-const interactions= require('./interactions');
+const interactions = require('./interactions');
 
 const commandTags = {};
 const reactReplyTo = {};
@@ -18,30 +18,26 @@ function sleep(ms) {
 ['reactReplyTo', 'reactHow', 'replyHow', 'commandTags'].forEach(dir => {
   const files = fs.readdirSync(`config/${dir}`);
   files.forEach(file => {
-    const extension = path.extname(file);
-    const fileName = path.basename(file, extension);
-    if (extension === '.txt') {
-      const lines = fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8').split('\n');
-      if (dir === 'reactReplyTo') {
-        // Read line by line, trim whitespace, and convert to RegExp
-        reactReplyTo[fileName] = lines.map(line => new RegExp(line.trim()));
+      const extension = path.extname(file);
+      const fileName = path.basename(file, extension);
+      if (extension === '.txt') {
+          const lines = fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8').split('\n');
+          if (dir === 'reactReplyTo') {
+            reactReplyTo[fileName] = lines.map(line => new RegExp(line.trim()));
+          }
+          if (dir === 'commandTags') {
+            commandTags[fileName] = lines.map(line => new RegExp("!" + line.trim()));
+          }
+      } else if (extension === '.json') {
+        const jsonData = JSON.parse(fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8'));
+        if (dir === 'reactHow') reactHow[fileName] = jsonData;
+        if (dir === 'replyHow') replyHow[fileName] = jsonData;
       }
-      if (dir === 'commandTags') {
-        // Read line by line, trim whitespace, and convert to RegExp
-        commandTags[fileName] = lines.map(line => new RegExp("!" + line.trim()));
-      }
-    } else if (extension === '.json') {
-      const jsonData = JSON.parse(fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8'));
-      if (dir === 'reactHow') reactHow[fileName] = jsonData;
-      if (dir === 'replyHow') replyHow[fileName] = jsonData;
-    }
   });
-  console.log(commandTags);
 });
 
 class BaseInteract {
-  constructor() {
-  }
+  constructor() {}
 
   // Common matching function to find regex in the message content
   findMatch(msg, regexArray) {
@@ -51,25 +47,26 @@ class BaseInteract {
       return ` ${msg.content} `.match(matchingRegex);
     }
     return null;
-  }
+}
 
   // This should be implemented by derived classes
   async processMatch(msg, match, responseArray) {
     throw new Error("This method should be implemented by the derived class");
-  }
+}
 
   async interact(msg, triggerArray, responseArray) {
     const match = this.findMatch(msg, triggerArray);
     if (match) {
-      return await this.processMatch(msg, match, responseArray);
+        // console.log(` ${msg.content}  +   ${match}`);
+        return await this.processMatch(msg, match,  responseArray);
     }
     return false;
   }
-}
+  }
 
 class TagInteract extends BaseInteract {
   async processMatch(msg, match) {
-    console.log(match);
+    // console.log(match);
     const tag = match[0];
     for (const interaction of interactions) {
       if (interaction.type === 'tag' && interaction.values.includes(tag)) {
@@ -104,6 +101,7 @@ class ReactInteract extends BaseInteract {
   async processMatch(msg, match, reactHowArray) {
     const randomReaction = reactHowArray[Math.floor(Math.random() * reactHowArray.length)];
     for (const el of randomReaction) {
+      sleep(200);
       await msg.react(el);
     }
     return true;
@@ -111,6 +109,7 @@ class ReactInteract extends BaseInteract {
 }
 
 async function sendTypingAndMessage(msg, messageContent) {
+  sleep(200);
   msg.channel.startTyping();
   msg.channel.send(messageContent);
   msg.channel.stopTyping();
@@ -122,53 +121,56 @@ const reactInteractor = new ReactInteract();
 const replyInteractor = new ReplyInteract();
 const tagInteractor = new TagInteract();
 
+//Message handling
 client.on('message', async msg => {
   if (msg.author.bot) {
-    return;
+      return;
   }
-  // console.log(`Received message: ${msg.content}`);
   let hasInteracted = false;
-  
-  for (let interaction of interactions.interactions) {  
-    // Access the interactions array from interactions.js
-    let queryDeclared = [];
-    let replyDeclared = [];
-    
 
-      for (let queryKey of interaction.queries) {
-        if (reactReplyTo[queryKey]) { // Check if the queryKey exists in reactReplyTo
-          queryDeclared = [...queryDeclared, ...reactReplyTo[queryKey]];
-          // console.log(typeof queryDeclared);
-          
-        }
-      }
-  
-      for (let replyKey of interaction.replies) {
-        if (reactHow[replyKey]) {
-          replyDeclared = [...replyDeclared, ...reactHow[replyKey]];
-        } else if (replyHow[replyKey]) {
-          replyDeclared = [...replyDeclared, ...replyHow[replyKey]];
-        }
-      }
-  
+  for (const interaction of interactions.interactions) {
+      let queryDeclared = [];
+      let replyDeclared = [];
+
+      //Fill queryDeclared with regexes
       if (interaction.type === 'tag') {
-        console.log("Processing a react interaction");
-        reactInteractor.interact(msg, queryDeclared, replyDeclared);
-        console.log(hasInteracted);
-      }else if (interaction.type === 'react') {
-        console.log("Processing a tag interaction");
-        hasInteracted = await tagInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
-        console.log(hasInteracted);
-      } else if (interaction.type === 'reply') {
-        console.log("Processing a reply interaction");
-        hasInteracted = await replyInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
-        console.log(hasInteracted);
-      } 
-      
-      if (hasInteracted) return; 
+        for (let queryKey of interaction.queries) { 
+          if (commandTags[queryKey]) { 
+            queryDeclared = [...queryDeclared, ...commandTags[queryKey]];
+          }
+        }
+      } else if (interaction.type === 'react' || interaction.type === 'reply') {
+        for (let queryKey of interaction.queries) {
+          if (reactReplyTo[queryKey]) { 
+            queryDeclared = [...queryDeclared, ...reactReplyTo[queryKey]];
+          }
+        }
+      }
 
+      //Fill replyDeclared with replies or reactions
+      if (interaction.type === 'reply') {
+        for (let replyKey of interaction.replies) {
+          if (replyHow[replyKey]) {
+            replyDeclared = [...replyDeclared, ...replyHow[replyKey]];
+          }
+        }
+      } else if (interaction.type === 'react') {
+        for (let reactKey of interaction.replies) {
+          if (reactHow[reactKey]) {
+            replyDeclared = [...replyDeclared, ...reactHow[reactKey]];
+          }
+        }
+      } else if (interaction.type === 'tag') {
+        for (let tagKey of interaction.replies) {
+          if (replyHow[tagKey]) {
+            replyDeclared = [...replyDeclared, ...replyHow[tagKey]];
+          } else if (reactHow[tagKey]) {
+            replyDeclared = [...replyDeclared, ...reactHow[tagKey]];
+          }
+        }
+      }
   }
 });
 
-// console.log('React-reply-bot initialized');
+console.log('React-reply-bot initialized');
 client.login(process.env.DISCORD_BOT_TOKEN);
