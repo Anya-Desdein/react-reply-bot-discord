@@ -1,4 +1,12 @@
-// interactions.js
+// Create relationships between files in order for reactions/replies/tags to work
+// Allowed types are: react, reply, tag
+
+// Querries are lists of words or sentences we're going to compare with user input. They're stored in reactReplyTo or commandTags directory depending on their type.
+// Replies are lists of words or sentences, or emojis this bot will use to interact with a user  
+
+// commandTags and reactReplyTo =  .txt
+// reactHow and replyHow = .json
+
 
 module.exports = {
     interactions: [
@@ -19,17 +27,17 @@ module.exports = {
       },
       {
         type: 'tag',
-        queries: ['careTags'],
+        queries: ['careTagsPl'],
         replies: ['careRepliesPl']
       },
       {
         type: 'tag',
-        queries: ['helloTags'],
+        queries: ['helloTagsPl'],
         replies: ['helloRepliesPl']
       },
       {
         type: 'tag',
-        queries: ['yourMomTags'],
+        queries: ['yourMomTagsPl'],
         replies: ['yourMomRepliesPl']
       },
       // Add more interactions here...
