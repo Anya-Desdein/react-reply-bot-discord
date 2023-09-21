@@ -1,4 +1,12 @@
-hej
-witaj
-cześć
+dzi+e+[nń]\s*do+bry+
+e+l+o+
+si+e+mk?a*
+he+j+k?[ao]*
+[jy]+o+
+si+e+ma+nk?o+
+e+lo+s[zh]ka*
+wi+ta+j(cie)?
+do+bry+\s+wi+e+cz[óo]+r
+do+bry+
+cze+[sś][cć]
 hello
