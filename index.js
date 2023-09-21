@@ -60,26 +60,34 @@ class BaseInteract {
   async interact(msg, triggerArray, responseArray) {
     const match = this.findMatch(msg, triggerArray);
     if (match) {
-        console.log(` ${msg.content}  +   ${match}`);
-        return await this.processMatch(msg, match,  responseArray);
+        return await this.processMatch(msg, match, responseArray);
     }
     return false;
   }
   }
 
+class ReactInteract extends BaseInteract {
+  async processMatch(msg, match, reactHowArray) {
+    const randomReaction = reactHowArray[Math.floor(Math.random() * reactHowArray.length)];
+    for (const el of randomReaction) {
+      sleep(600);
+      await msg.react(el);
+    }
+    return true;
+  }
+}
+  
 class TagInteract extends BaseInteract {
-  async processMatch(msg, match) {
-    console.log(match);
+  async processMatch(msg, match, replyHowArray) {
     const tag = match[0];
-    for (const interaction of interactions) {
-      if (interaction.type === 'tag' && interaction.values.includes(tag)) {
-        let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
-        const namePart = msg.author.username;
-        let item = randomReply.replace('$person$', namePart);
+      let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
+      for (let item of randomReply) {
+        item = item
+          .replace('$author$', msg.author.username)
+          .replace('$match$', match[1]);
         item = item[0].toUpperCase() + item.substr(1);
         await sendTypingAndMessage(msg, item);
         return true;
-      }
     }
     return false;
   }
@@ -100,19 +108,8 @@ class ReplyInteract extends BaseInteract {
   }
 }
 
-class ReactInteract extends BaseInteract {
-  async processMatch(msg, match, reactHowArray) {
-    const randomReaction = reactHowArray[Math.floor(Math.random() * reactHowArray.length)];
-    for (const el of randomReaction) {
-      sleep(200);
-      await msg.react(el);
-    }
-    return true;
-  }
-}
-
 async function sendTypingAndMessage(msg, messageContent) {
-  sleep(200);
+  sleep(1600);
   msg.channel.startTyping();
   msg.channel.send(messageContent);
   msg.channel.stopTyping();
@@ -131,66 +128,69 @@ client.on('message', async msg => {
   }
   console.log(`Received message: ${msg.content}`);
   let hasInteracted = false;
+  
+  const interactionTypesOrder = ['react', 'tag', 'reply'];
+  for (const interactionType of interactionTypesOrder) {
+      for (const interaction of interactions.interactions) {
+          if (interaction.type !== interactionType) continue;
 
-  for (const interaction of interactions.interactions) {
-      let queryDeclared = [];
-      let replyDeclared = [];
+          let queryDeclared = [];
+          let replyDeclared = [];
 
-      //Fill queryDeclared with regexes
-      if (interaction.type === 'tag') {
-        for (let queryKey of interaction.queries) { 
-          if (commandTags[queryKey]) { 
-            queryDeclared = [...queryDeclared, ...commandTags[queryKey]];
+          //Fill queryDeclared with regexes
+          if (interaction.type === 'tag') {
+            for (let queryKey of interaction.queries) { 
+              if (commandTags[queryKey]) { 
+                queryDeclared = [...queryDeclared, ...commandTags[queryKey]];
+              }
+            }
+          } else if (interaction.type === 'react' || interaction.type === 'reply') {
+            for (let queryKey of interaction.queries) {
+              if (reactReplyTo[queryKey]) { 
+                queryDeclared = [...queryDeclared, ...reactReplyTo[queryKey]];
+              }
+            }
           }
-        }
-      } else if (interaction.type === 'react' || interaction.type === 'reply') {
-        for (let queryKey of interaction.queries) {
-          if (reactReplyTo[queryKey]) { 
-            queryDeclared = [...queryDeclared, ...reactReplyTo[queryKey]];
+
+          //Fill replyDeclared with replies or reactions
+          if (interaction.type === 'react') {
+            for (let reactKey of interaction.replies) {
+              if (reactHow[reactKey]) {
+                replyDeclared = [...replyDeclared, ...reactHow[reactKey]];
+              }
+            }
+          } else if (interaction.type === 'tag') {
+            for (let tagKey of interaction.replies) {
+              if (replyHow[tagKey]) {
+                replyDeclared = [...replyDeclared, ...replyHow[tagKey]];
+              } else if (reactHow[tagKey]) {
+                replyDeclared = [...replyDeclared, ...reactHow[tagKey]];
+              }
+            }
+          } else if (interaction.type === 'reply') {
+            for (let replyKey of interaction.replies) {
+              if (replyHow[replyKey]) {
+                replyDeclared = [...replyDeclared, ...replyHow[replyKey]];
+              }
+            }
           }
-        }
+
+          if (interaction.type === 'react') {
+            console.log("Processing a react interaction");
+            reactInteractor.interact(msg, queryDeclared, replyDeclared);
+            console.log(hasInteracted);
+          } else if (interaction.type === 'tag') {
+            console.log("Processing a tag interaction");
+            hasInteracted = await tagInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
+            console.log(hasInteracted);
+          } else if (interaction.type === 'reply') {
+            console.log("Processing a reply interaction");
+            hasInteracted = await replyInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
+            console.log(hasInteracted);
+          }
       }
-
-      //Fill replyDeclared with replies or reactions
-      if (interaction.type === 'reply') {
-        for (let replyKey of interaction.replies) {
-          if (replyHow[replyKey]) {
-            replyDeclared = [...replyDeclared, ...replyHow[replyKey]];
-          }
-        }
-      } else if (interaction.type === 'react') {
-        for (let reactKey of interaction.replies) {
-          if (reactHow[reactKey]) {
-            replyDeclared = [...replyDeclared, ...reactHow[reactKey]];
-          }
-        }
-      } else if (interaction.type === 'tag') {
-        for (let tagKey of interaction.replies) {
-          if (replyHow[tagKey]) {
-            replyDeclared = [...replyDeclared, ...replyHow[tagKey]];
-          } else if (reactHow[tagKey]) {
-            replyDeclared = [...replyDeclared, ...reactHow[tagKey]];
-          }
-        }
-      }
-
-      if (interaction.type === 'react') {
-        console.log("Processing a react interaction");
-        reactInteractor.interact(msg, queryDeclared, replyDeclared);
-        console.log(hasInteracted);
-      } else if (interaction.type === 'reply') {
-        console.log("Processing a reply interaction");
-        hasInteracted = await replyInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
-        console.log(hasInteracted);
-      } else if (interaction.type === 'tag') {
-        console.log("Processing a tag interaction");
-        hasInteracted = await tagInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
-        console.log(hasInteracted);
-      }
-      
-      if (hasInteracted) return; 
+      if (hasInteracted) return; // Exit if an interaction was found.
   }
-
 });
 
 console.log('React-reply-bot initialized');
