@@ -82,8 +82,20 @@ class TagInteract extends BaseInteract {
     const tag = match[0];
       let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
       for (let item of randomReply) {
+        const parts = msg.content.split(match[0]).filter(Boolean);
+        let namePart;
+        if (match[0].startsWith("!")) {
+          if (parts.length === 0) {
+            namePart = msg.author.username;
+          } else {
+            namePart = parts.join(' ').replace(/\s+/g, " ").trim();
+          }
+        } else {
+          namePart = msg.author.username;
+        }
+  
         item = item
-          .replace('$author$', msg.author.username)
+          .replace('$person$', namePart)
           .replace('$match$', match[1]);
         item = item[0].toUpperCase() + item.substr(1);
         await sendTypingAndMessage(msg, item);
@@ -98,7 +110,7 @@ class ReplyInteract extends BaseInteract {
     let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
     for (let item of randomReply) {
       item = item
-        .replace('$author$', msg.author.username)
+        .replace('$person$', msg.author.username)
         .replace('$match$', match[1]);
       item = item[0].toUpperCase() + item.substr(1);
       await sendTypingAndMessage(msg, item);
@@ -109,7 +121,7 @@ class ReplyInteract extends BaseInteract {
 }
 
 async function sendTypingAndMessage(msg, messageContent) {
-  sleep(1600);
+  sleep(2000);
   msg.channel.startTyping();
   msg.channel.send(messageContent);
   msg.channel.stopTyping();
