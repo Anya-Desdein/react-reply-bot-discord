@@ -72,10 +72,8 @@ class BaseInteract {
 
     let namePart;
     if (match[0].startsWith("!")) {
-      const parts = msg.content.split(match[0]).filter(Boolean);
-      namePart = (parts.length === 0) ? msg.author.username : parts.join(' ').replace(/\s+/g, " ").trim();
-      match[0]
-
+      const parts = msg.content.slice(match[0].length).trim();  // Just get the remainder of the message after the match.
+      namePart = parts || msg.author.username;  // Use the remainder or default to the author's username.
       match[0] = match[0].slice(1);
     } else {
       namePart = msg.author.username;
