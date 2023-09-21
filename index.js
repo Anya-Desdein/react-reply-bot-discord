@@ -65,22 +65,25 @@ class BaseInteract {
     return false;
   }
 
-  //Specials in this context are special elements you can add to your replies
+  //Specials in this context are placeholders you can add to your replies
   //There are 3 types of Specials: $match$, $person$ and $author$
   async replaceSpecials(msg, match, drawnReply) {
-    console.log(msg);
-    console.log(drawnReply);
 
     let namePart;
     if (match[0].startsWith("!")) {
       const parts = msg.content.split(match[0]).filter(Boolean);
       namePart = (parts.length === 0) ? msg.author.username : parts.join(' ').replace(/\s+/g, " ").trim();
+      match[0]
+
+      match[0] = match[0].slice(1);
     } else {
       namePart = msg.author.username;
     }
     
+    console.log(msg.author.username)
+
     const replacements = {
-      "$match$": match[1],
+      "$match$": match[0],
       "$person$": namePart.charAt(0).toUpperCase() + namePart.slice(1),
       "$author$": msg.author.username
     };
@@ -91,7 +94,7 @@ class BaseInteract {
     return drawnReply;
   }
 
-  }
+}
 
 class ReactInteract extends BaseInteract {
   async processMatch(msg, match, reactHowArray) {
