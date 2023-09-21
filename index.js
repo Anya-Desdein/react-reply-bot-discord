@@ -22,7 +22,7 @@ function sleep(ms) {
       const fileName = path.basename(file, extension);
       if (extension === '.txt') {
         const lines = fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8')
-        .split('\n')
+        .split(/\r?\n/)
         .filter(line => line.trim());
 
           if (dir === 'reactReplyTo') {
@@ -160,6 +160,7 @@ client.on('message', async msg => {
             for (let queryKey of interaction.queries) {
               if (reactReplyTo[queryKey]) { 
                 queryDeclared = [...queryDeclared, ...reactReplyTo[queryKey]];
+
               }
             }
           }
