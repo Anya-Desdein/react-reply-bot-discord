@@ -44,10 +44,11 @@ class BaseInteract {
 
   // Common matching function to find regex in the message content
   findMatch(msg, regexArray) {
+    const messageContent = msg.content.toLowerCase();
     const sortedRegexArray = [...regexArray].sort((a, b) => b.toString().length - a.toString().length);
-    const matchingRegex = sortedRegexArray.find(r => `${msg.content}`.match(r));
+    const matchingRegex = sortedRegexArray.find(r => `${messageContent}`.match(r));
     if (matchingRegex) {
-      return ` ${msg.content} `.match(matchingRegex);
+      return ` ${messageContent} `.match(matchingRegex);
     }
     return null;
 }

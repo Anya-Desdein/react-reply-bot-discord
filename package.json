@@ -1,7 +1,7 @@
 {
   "name": "react-reply-bot",
-  "version": "0.3.1",
-  "description": "This is the 1st public working version of the bot. Have fun.",
+  "version": "0.4.0",
+  "description": "This is the 2nd version of the bot. Have fun.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
