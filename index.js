@@ -70,7 +70,7 @@ class ReactInteract extends BaseInteract {
   async processMatch(msg, match, reactHowArray) {
     const randomReaction = reactHowArray[Math.floor(Math.random() * reactHowArray.length)];
     for (const el of randomReaction) {
-      sleep(600);
+      await sleep(600);
       await msg.react(el);
     }
     return true;
@@ -121,8 +121,8 @@ class ReplyInteract extends BaseInteract {
 }
 
 async function sendTypingAndMessage(msg, messageContent) {
-  sleep(2000);
   msg.channel.startTyping();
+  await sleep(1200);
   msg.channel.send(messageContent);
   msg.channel.stopTyping();
 }

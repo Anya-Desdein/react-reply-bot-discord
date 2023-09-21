@@ -17,7 +17,7 @@ module.exports = {
       },
       {
         type: 'reply',
-        queries: ['helloListPl', 'helloListUniversal'],
+        queries: ['helloListPl', 'helloListUniversal', 'helloListEn'],
         replies: ['helloRepliesPl']
       },
       {
