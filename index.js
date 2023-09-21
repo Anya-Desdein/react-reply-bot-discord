@@ -64,6 +64,33 @@ class BaseInteract {
     }
     return false;
   }
+
+  //Specials in this context are special elements you can add to your replies
+  //There are 3 types of Specials: $match$, $person$ and $author$
+  async replaceSpecials(msg, match, drawnReply) {
+    console.log(msg);
+    console.log(drawnReply);
+
+    let namePart;
+    if (match[0].startsWith("!")) {
+      const parts = msg.content.split(match[0]).filter(Boolean);
+      namePart = (parts.length === 0) ? msg.author.username : parts.join(' ').replace(/\s+/g, " ").trim();
+    } else {
+      namePart = msg.author.username;
+    }
+    
+    const replacements = {
+      "$match$": match[1],
+      "$person$": namePart.charAt(0).toUpperCase() + namePart.slice(1),
+      "$author$": msg.author.username
+    };
+  
+    for (const [key, value] of Object.entries(replacements)) {
+      drawnReply = drawnReply.split(key).join(value);
+    }
+    return drawnReply;
+  }
+
   }
 
 class ReactInteract extends BaseInteract {
@@ -79,27 +106,13 @@ class ReactInteract extends BaseInteract {
   
 class TagInteract extends BaseInteract {
   async processMatch(msg, match, replyHowArray) {
-    const tag = match[0];
-      let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
-      for (let item of randomReply) {
-        const parts = msg.content.split(match[0]).filter(Boolean);
-        let namePart;
-        if (match[0].startsWith("!")) {
-          if (parts.length === 0) {
-            namePart = msg.author.username;
-          } else {
-            namePart = parts.join(' ').replace(/\s+/g, " ").trim();
-          }
-        } else {
-          namePart = msg.author.username;
-        }
-  
-        item = item
-          .replace('$person$', namePart)
-          .replace('$match$', match[1]);
-        item = item[0].toUpperCase() + item.substr(1);
-        await sendTypingAndMessage(msg, item);
-        return true;
+    let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
+
+    for (let item of randomReply) {
+      item = await this.replaceSpecials(msg, match, item);
+      item = item[0].toUpperCase() + item.substr(1);
+      await sendTypingAndMessage(msg, item);
+      return true;
     }
     return false;
   }
@@ -108,10 +121,10 @@ class TagInteract extends BaseInteract {
 class ReplyInteract extends BaseInteract {
   async processMatch(msg, match, replyHowArray) {
     let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
+
     for (let item of randomReply) {
-      item = item
-        .replace('$person$', msg.author.username)
-        .replace('$match$', match[1]);
+      console.log(item);
+      item = await this.replaceSpecials(msg, match, item);
       item = item[0].toUpperCase() + item.substr(1);
       await sendTypingAndMessage(msg, item);
       return true;
