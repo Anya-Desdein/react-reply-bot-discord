@@ -21,9 +21,12 @@ function sleep(ms) {
       const extension = path.extname(file);
       const fileName = path.basename(file, extension);
       if (extension === '.txt') {
-          const lines = fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8').split('\n');
+        const lines = fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8')
+        .split('\n')
+        .filter(line => line.trim());
+
           if (dir === 'reactReplyTo') {
-            reactReplyTo[fileName] = lines.map(line => new RegExp(line.trim()));
+            reactReplyTo[fileName] = lines.map(line => new RegExp(line));
           }
           if (dir === 'commandTags') {
             commandTags[fileName] = lines.map(line => new RegExp("!" + line.trim()));
@@ -57,7 +60,7 @@ class BaseInteract {
   async interact(msg, triggerArray, responseArray) {
     const match = this.findMatch(msg, triggerArray);
     if (match) {
-        // console.log(` ${msg.content}  +   ${match}`);
+        console.log(` ${msg.content}  +   ${match}`);
         return await this.processMatch(msg, match,  responseArray);
     }
     return false;
@@ -66,11 +69,11 @@ class BaseInteract {
 
 class TagInteract extends BaseInteract {
   async processMatch(msg, match) {
-    // console.log(match);
+    console.log(match);
     const tag = match[0];
     for (const interaction of interactions) {
       if (interaction.type === 'tag' && interaction.values.includes(tag)) {
-        const randomReply = interaction.replies[Math.floor(Math.random() * interaction.replies.length)];
+        let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
         const namePart = msg.author.username;
         let item = randomReply.replace('$person$', namePart);
         item = item[0].toUpperCase() + item.substr(1);
@@ -126,6 +129,7 @@ client.on('message', async msg => {
   if (msg.author.bot) {
       return;
   }
+  console.log(`Received message: ${msg.content}`);
   let hasInteracted = false;
 
   for (const interaction of interactions.interactions) {
@@ -169,7 +173,24 @@ client.on('message', async msg => {
           }
         }
       }
+
+      if (interaction.type === 'react') {
+        console.log("Processing a react interaction");
+        reactInteractor.interact(msg, queryDeclared, replyDeclared);
+        console.log(hasInteracted);
+      } else if (interaction.type === 'reply') {
+        console.log("Processing a reply interaction");
+        hasInteracted = await replyInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
+        console.log(hasInteracted);
+      } else if (interaction.type === 'tag') {
+        console.log("Processing a tag interaction");
+        hasInteracted = await tagInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
+        console.log(hasInteracted);
+      }
+      
+      if (hasInteracted) return; 
   }
+
 });
 
 console.log('React-reply-bot initialized');

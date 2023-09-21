@@ -2,7 +2,7 @@
 // Allowed types are: react, reply, tag
 
 // Querries are lists of words or sentences we're going to compare with user input. They're stored in reactReplyTo or commandTags directory depending on their type.
-// Replies are lists of words or sentences, or emojis this bot will use to interact with a user  
+// Replies are lists of words or sentences, or emojis this bot will use to interact with a user. They're stored in replyHow and reactHow directories.
 
 // commandTags and reactReplyTo =  .txt
 // reactHow and replyHow = .json
