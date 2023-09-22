@@ -5,38 +5,52 @@ require('dotenv').config();
 
 const interactions = require('./interactions');
 
-const commandTags = {};
-const reactReplyTo = {};
-const reactHow = {};
-const replyHow = {};
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
+const commandTags = {};
+const reactReplyTo = {};
+const reactHow = {};
+const replyHow = {};
+
+function readTxtFile(configDir, dir, file, fileName) {
+  const lines = fs.readFileSync(path.join(`${configDir}/${dir}`, file), 'utf8')
+  .split(/\r?\n/)
+  .filter(line => line.trim());
+
+    if (dir === 'reactReplyTo') {
+      reactReplyTo[fileName] = lines.map(line => new RegExp(line));
+    }
+    if (dir === 'commandTags') {
+      commandTags[fileName] = lines.map(line => new RegExp("!" + line.trim()));
+    }
+}
+
+function readJsonFile(configDir, dir, file, fileName) {
+  const jsonData = JSON.parse(fs.readFileSync(path.join(`${configDir}/${dir}/`, file), 'utf8'));
+  if (dir === 'reactHow') reactHow[fileName] = jsonData;
+  if (dir === 'replyHow') replyHow[fileName] = jsonData;
+}
+
+function readFolderContents(configDir, dir) {
+  const files = fs.readdirSync(`${configDir}/${dir}`);
+  files.forEach(file => {
+    const extension = path.extname(file);
+    const fileName = path.basename(file, extension);
+    if (extension === '.txt') {
+      readTxtFile(configDir, dir, file, fileName); 
+    } else if (extension === '.json') { 
+      readJsonFile(configDir, dir, file, fileName);
+    }
+  });
+}
+
 // Read files
 ['reactReplyTo', 'reactHow', 'replyHow', 'commandTags'].forEach(dir => {
-  const files = fs.readdirSync(`config/${dir}`);
-  files.forEach(file => {
-      const extension = path.extname(file);
-      const fileName = path.basename(file, extension);
-      if (extension === '.txt') {
-        const lines = fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8')
-        .split(/\r?\n/)
-        .filter(line => line.trim());
-
-          if (dir === 'reactReplyTo') {
-            reactReplyTo[fileName] = lines.map(line => new RegExp(line));
-          }
-          if (dir === 'commandTags') {
-            commandTags[fileName] = lines.map(line => new RegExp("!" + line.trim()));
-          }
-      } else if (extension === '.json') {
-        const jsonData = JSON.parse(fs.readFileSync(path.join(`config/${dir}/`, file), 'utf8'));
-        if (dir === 'reactHow') reactHow[fileName] = jsonData;
-        if (dir === 'replyHow') replyHow[fileName] = jsonData;
-      }
-  });
+  const configDirPath = 'config';
+  readFolderContents(configDirPath, dir);
 });
 
 class BaseInteract {
@@ -78,8 +92,6 @@ class BaseInteract {
     } else {
       namePart = msg.author.username;
     }
-    
-    console.log(msg.author.username)
 
     const replacements = {
       "$match$": match[0],
