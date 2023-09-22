@@ -5,53 +5,75 @@ require('dotenv').config();
 
 const interactions = require('./interactions');
 
-
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
 
-const commandTags = {};
-const reactReplyTo = {};
-const reactHow = {};
-const replyHow = {};
+class ConfigLoader {
+  constructor(configDir) {
+    this.configDir = configDir;
+    this.configData = {
+      commandTags: {},
+      reactReplyTo: {},
+      reactHow: {},
+      replyHow: {}
+    };
+  }
 
-function readTxtFile(configDir, dir, file, fileName) {
-  const lines = fs.readFileSync(path.join(`${configDir}/${dir}`, file), 'utf8')
-  .split(/\r?\n/)
-  .filter(line => line.trim());
+  readTxtFile(dir, file, fileName) {
+    const lines = fs.readFileSync(path.join(`${this.configDir}/${dir}`, file), 'utf8')
+    .split(/\r?\n/)
+    .filter(line => line.trim());
 
-    if (dir === 'reactReplyTo') {
-      reactReplyTo[fileName] = lines.map(line => new RegExp(line));
+    switch(dir) {
+      case 'reactReplyTo':
+        this.configData.reactReplyTo[fileName] = lines.map(line => new RegExp(line));
+        break;
+      case 'commandTags':
+        this.configData.commandTags[fileName] = lines.map(line => new RegExp("!" + line));
+        break;  
+      default:
+        console.error(`Unsupported directory name for TXT: ${dir}`);
     }
-    if (dir === 'commandTags') {
-      commandTags[fileName] = lines.map(line => new RegExp("!" + line.trim()));
+  }
+
+  readJsonFile(dir, file, fileName) {
+    const jsonData = JSON.parse(fs.readFileSync(path.join(`${this.configDir}/${dir}/`, file), 'utf8'));
+    switch(dir) {
+      case 'reactHow':
+        this.configData.reactHow[fileName] = jsonData;
+        break;
+      case 'replyHow':
+        this.configData.replyHow[fileName] = jsonData;
+        break;
+      default: 
+        console.error(`Undupported directory name for JSON: ${dir}`);
     }
-}
+  }
 
-function readJsonFile(configDir, dir, file, fileName) {
-  const jsonData = JSON.parse(fs.readFileSync(path.join(`${configDir}/${dir}/`, file), 'utf8'));
-  if (dir === 'reactHow') reactHow[fileName] = jsonData;
-  if (dir === 'replyHow') replyHow[fileName] = jsonData;
-}
+  readFolderContents(dir) {
+    const files = fs.readdirSync(`${this.configDir}/${dir}`);
+    files.forEach(file => {
+      const extension = path.extname(file);
+      const fileName = path.basename(file, extension);
+      if (extension === '.txt') {
+        this.readTxtFile(dir, file, fileName);
+      } else if (extension === '.json') {
+        this.readJsonFile(dir, file, fileName);
+      }
+    });
+  }
+  
+  load() {
+    ['reactReplyTo', 'reactHow', 'replyHow', 'commandTags'].forEach(dir => {
+      this.readFolderContents(dir);
+    });
+  }
 
-function readFolderContents(configDir, dir) {
-  const files = fs.readdirSync(`${configDir}/${dir}`);
-  files.forEach(file => {
-    const extension = path.extname(file);
-    const fileName = path.basename(file, extension);
-    if (extension === '.txt') {
-      readTxtFile(configDir, dir, file, fileName); 
-    } else if (extension === '.json') { 
-      readJsonFile(configDir, dir, file, fileName);
-    }
-  });
+  getConfigData() {
+    return this.configData;
+  }
 }
-
-// Read files
-['reactReplyTo', 'reactHow', 'replyHow', 'commandTags'].forEach(dir => {
-  const configDirPath = 'config';
-  readFolderContents(configDirPath, dir);
-});
 
 class BaseInteract {
   constructor() {}
@@ -154,6 +176,10 @@ async function sendTypingAndMessage(msg, messageContent) {
   msg.channel.stopTyping();
 }
 
+const loader = new ConfigLoader('config');
+loader.load();
+const configData = loader.getConfigData();
+
 const client = new Discord.Client();
 
 const reactInteractor = new ReactInteract();
@@ -165,7 +191,7 @@ client.on('message', async msg => {
   if (msg.author.bot) {
       return;
   }
-  console.log(`Received message: ${msg.content}`);
+  
   let hasInteracted = false;
   
   const interactionTypesOrder = ['react', 'tag', 'reply'];
@@ -179,14 +205,14 @@ client.on('message', async msg => {
           //Fill queryDeclared with regexes
           if (interaction.type === 'tag') {
             for (let queryKey of interaction.queries) { 
-              if (commandTags[queryKey]) { 
-                queryDeclared = [...queryDeclared, ...commandTags[queryKey]];
+              if (configData.commandTags[queryKey]) { 
+                queryDeclared = [...queryDeclared, ...configData.commandTags[queryKey]];
               }
             }
           } else if (interaction.type === 'react' || interaction.type === 'reply') {
             for (let queryKey of interaction.queries) {
-              if (reactReplyTo[queryKey]) { 
-                queryDeclared = [...queryDeclared, ...reactReplyTo[queryKey]];
+              if (configData.reactReplyTo[queryKey]) { 
+                queryDeclared = [...queryDeclared, ...configData.reactReplyTo[queryKey]];
 
               }
             }
@@ -195,38 +221,32 @@ client.on('message', async msg => {
           //Fill replyDeclared with replies or reactions
           if (interaction.type === 'react') {
             for (let reactKey of interaction.replies) {
-              if (reactHow[reactKey]) {
-                replyDeclared = [...replyDeclared, ...reactHow[reactKey]];
+              if (configData.reactHow[reactKey]) {
+                replyDeclared = [...replyDeclared, ...configData.reactHow[reactKey]];
               }
             }
           } else if (interaction.type === 'tag') {
             for (let tagKey of interaction.replies) {
-              if (replyHow[tagKey]) {
-                replyDeclared = [...replyDeclared, ...replyHow[tagKey]];
-              } else if (reactHow[tagKey]) {
-                replyDeclared = [...replyDeclared, ...reactHow[tagKey]];
+              if (configData.replyHow[tagKey]) {
+                replyDeclared = [...replyDeclared, ...configData.replyHow[tagKey]];
+              } else if (configData.reactHow[tagKey]) {
+                replyDeclared = [...replyDeclared, ...configData.reactHow[tagKey]];
               }
             }
           } else if (interaction.type === 'reply') {
             for (let replyKey of interaction.replies) {
-              if (replyHow[replyKey]) {
-                replyDeclared = [...replyDeclared, ...replyHow[replyKey]];
+              if (configData.replyHow[replyKey]) {
+                replyDeclared = [...replyDeclared, ...configData.replyHow[replyKey]];
               }
             }
           }
 
           if (interaction.type === 'react') {
-            console.log("Processing a react interaction");
             reactInteractor.interact(msg, queryDeclared, replyDeclared);
-            console.log(hasInteracted);
           } else if (interaction.type === 'tag') {
-            console.log("Processing a tag interaction");
             hasInteracted = await tagInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
-            console.log(hasInteracted);
           } else if (interaction.type === 'reply') {
-            console.log("Processing a reply interaction");
             hasInteracted = await replyInteractor.interact(msg, queryDeclared, replyDeclared) || hasInteracted;
-            console.log(hasInteracted);
           }
       }
       if (hasInteracted) return; // Exit if an interaction was found.
