@@ -27,10 +27,10 @@ class ConfigLoader {
 
     switch(dir) {
       case 'reactReplyTo':
-        this.configData.reactReplyTo[fileName] = lines.map(line => new RegExp(line));
+        this.configData.reactReplyTo[fileName] = lines.map(line => new RegExp(line)).sort((a, b) => b.toString().length - a.toString().length);
         break;
       case 'commandTags':
-        this.configData.commandTags[fileName] = lines.map(line => new RegExp("!" + line));
+        this.configData.reactReplyTo[fileName] = lines.map(line => new RegExp("!" + line)).sort((a, b) => b.toString().length - a.toString().length);
         break;  
       default:
         console.error(`Unsupported directory name for TXT: ${dir}`);
@@ -81,8 +81,7 @@ class BaseInteract {
   // Common matching function to find regex in the message content
   findMatch(msg, regexArray) {
     const messageContent = msg.content.toLowerCase();
-    const sortedRegexArray = [...regexArray].sort((a, b) => b.toString().length - a.toString().length);
-    const matchingRegex = sortedRegexArray.find(r => `${messageContent}`.match(r));
+    const matchingRegex = regexArray.find(r => `${messageContent}`.match(r));
     if (matchingRegex) {
       return ` ${messageContent} `.match(matchingRegex);
     }
@@ -139,7 +138,8 @@ class ReactInteract extends BaseInteract {
     return true;
   }
 }
-  
+
+//Is the same as ReplyInteract BUT will be changed and expanded upon in the future
 class TagInteract extends BaseInteract {
   async processMatch(msg, match, replyHowArray) {
     let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
@@ -191,7 +191,7 @@ client.on('message', async msg => {
   if (msg.author.bot) {
       return;
   }
-  
+
   let hasInteracted = false;
   
   const interactionTypesOrder = ['react', 'tag', 'reply'];
