@@ -18,7 +18,27 @@ class ConfigLoader {
       reactHow: {},
       replyHow: {}
     };
+
+  this.CACHE_VERSION = 1;
+  this.CURRENT_CACHES = {
+    folder: `folder-cache-v${this.CACHE_VERSION}`
+  };
+
+  this.folderCache = {};
+}
+
+  // Activate the cache: handle the versioning and delete old caches
+  activate() {
+    let expectedCacheNamesSet = new Set(Object.values(this.CURRENT_CACHES));
+
+    for (let cacheName in this.folderCache) {
+      if (!expectedCacheNamesSet.has(cacheName)) {
+        console.log('Deleting out of date cache:', cacheName);
+        delete this.folderCache[cacheName];
+      }
+    }
   }
+
 
   readTxtFile(dir, file, fileName) {
     const lines = fs.readFileSync(path.join(`${this.configDir}/${dir}`, file), 'utf8')
@@ -52,7 +72,21 @@ class ConfigLoader {
   }
 
   readFolderContents(dir) {
+    const cacheName = this.CURRENT_CACHES.folder;
+    console.log(cacheName);
+    // Check if directory contents are cached
+    if (this.folderCache[cacheName] && this.folderCache[cacheName][dir]) {
+      return this.folderCache[cacheName][dir];
+    }
+  
+    // If the cache entry doesn't exist, initialize it
+    if (!this.folderCache[cacheName]) {
+      this.folderCache[cacheName] = {};
+    }
+
     const files = fs.readdirSync(`${this.configDir}/${dir}`);
+    this.folderCache[cacheName][dir] = files;
+
     files.forEach(file => {
       const extension = path.extname(file);
       const fileName = path.basename(file, extension);
@@ -159,7 +193,6 @@ class ReplyInteract extends BaseInteract {
     let randomReply = replyHowArray[Math.floor(Math.random() * replyHowArray.length)];
 
     for (let item of randomReply) {
-      console.log(item);
       item = await this.replaceSpecials(msg, match, item);
       item = item[0].toUpperCase() + item.substr(1);
       await sendTypingAndMessage(msg, item);
