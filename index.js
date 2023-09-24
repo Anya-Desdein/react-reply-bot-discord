@@ -18,26 +18,7 @@ class ConfigLoader {
       reactHow: {},
       replyHow: {}
     };
-
-  this.CACHE_VERSION = 1;
-  this.CURRENT_CACHES = {
-    folder: `folder-cache-v${this.CACHE_VERSION}`
-  };
-
-  this.folderCache = {};
 }
-
-  // Activate the cache: handle the versioning and delete old caches
-  activate() {
-    let expectedCacheNamesSet = new Set(Object.values(this.CURRENT_CACHES));
-
-    for (let cacheName in this.folderCache) {
-      if (!expectedCacheNamesSet.has(cacheName)) {
-        console.log('Deleting out of date cache:', cacheName);
-        delete this.folderCache[cacheName];
-      }
-    }
-  }
 
 
   readTxtFile(dir, file, fileName) {
@@ -50,7 +31,7 @@ class ConfigLoader {
         this.configData.reactReplyTo[fileName] = lines.map(line => new RegExp(line)).sort((a, b) => b.toString().length - a.toString().length);
         break;
       case 'commandTags':
-        this.configData.reactReplyTo[fileName] = lines.map(line => new RegExp("!" + line)).sort((a, b) => b.toString().length - a.toString().length);
+        this.configData.commandTags[fileName] = lines.map(line => new RegExp("!" + line)).sort((a, b) => b.toString().length - a.toString().length);
         break;  
       default:
         console.error(`Unsupported directory name for TXT: ${dir}`);
@@ -72,20 +53,8 @@ class ConfigLoader {
   }
 
   readFolderContents(dir) {
-    const cacheName = this.CURRENT_CACHES.folder;
-    console.log(cacheName);
-    // Check if directory contents are cached
-    if (this.folderCache[cacheName] && this.folderCache[cacheName][dir]) {
-      return this.folderCache[cacheName][dir];
-    }
-  
-    // If the cache entry doesn't exist, initialize it
-    if (!this.folderCache[cacheName]) {
-      this.folderCache[cacheName] = {};
-    }
-
     const files = fs.readdirSync(`${this.configDir}/${dir}`);
-    this.folderCache[cacheName][dir] = files;
+
 
     files.forEach(file => {
       const extension = path.extname(file);
@@ -141,7 +110,7 @@ class BaseInteract {
 
     let namePart;
     if (match[0].startsWith("!")) {
-      const parts = msg.content.slice(match[0].length).trim();  // Just get the remainder of the message after the match.
+      const parts = msg.content.replace(match[0], '').trim();  // Just get the remainder of the message after the match.
       namePart = parts || msg.author.username;  // Use the remainder or default to the author's username.
       match[0] = match[0].slice(1);
     } else {
